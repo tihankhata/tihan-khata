@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Tihan Khata</title><meta name="description" content="Tihan Khata - digital due ledger app for shops and customers">
+<meta name="theme-color" content="#0b6b41"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f4f6f5;--card:#fff;--tx:#14211a;--mut:#6b7c72;--bd:#e3e9e5;--red:#d32f2f;--grn:#1b8a3a;--g1:#0b6b41;--g2:#19a566;--pri:#0f7a4a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111714;--card:#1b241f;--tx:#e8f0ea;--mut:#93a89b;--bd:#2b3a31;--red:#ef6b6b;--grn:#5fd07f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#111714;--card:#1b241f;--tx:#e8f0ea;--mut:#93a89b;--bd:#2b3a31;--red:#ef6b6b;--grn:#5fd07f;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Hind Siliguri","Noto Sans Bengali",system-ui,sans-serif;font-size:15px;padding-bottom:120px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--g1);z-index:50}
+button{background:var(--pri);color:#fff;border:0;border-radius:12px;padding:9px 14px;font:inherit;cursor:pointer}
+button.g{background:transparent;color:var(--pri);border:1px solid var(--bd)}button.s{padding:5px 10px;font-size:13px}button.r{background:var(--red)}
+.top{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:12px 14px 34px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sp{justify-content:space-between;flex-wrap:nowrap}
+.sel{background:rgba(255,255,255,.94);color:#222;border-radius:24px;padding:9px 16px;font-weight:600;max-width:60vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{font-size:12px;opacity:.92;margin:6px 4px}
+.ib{text-align:center;font-size:11px;position:relative;cursor:pointer;min-width:54px}.ib svg{display:block;margin:0 auto 2px}
+.ib i{position:absolute;top:-6px;right:8px;background:#fff;color:var(--pri);border-radius:10px;font-style:normal;font-size:10px;padding:1px 5px;font-weight:700}
+.body{background:var(--bg);border-radius:24px 24px 0 0;margin-top:-20px;padding:14px;position:relative;max-width:640px;margin-left:auto;margin-right:auto}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 4px;text-align:center;font-size:12.5px;margin:6px 0 14px}.gi{cursor:pointer}
+.gc{width:54px;height:54px;border-radius:17px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 4px}
+.c0{background:#dff5e3;color:#1b8a3a}.c1{background:#ffe3e3;color:#c62828}.c2{background:#fff0d6;color:#d98200}.c3{background:#e3ecff;color:#2a5bd7}
+.tot{display:flex;background:var(--card);border-radius:18px;padding:14px 0;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.tot>div{flex:1;text-align:center}.tot>div+div{border-left:1px solid var(--bd)}.tot b{font-size:25px;display:block}
+.due{color:var(--red);font-weight:700}.ok{color:var(--grn);font-weight:700}.m{color:var(--mut);font-size:13px}
+.srch{background:var(--card);border-radius:24px;padding:4px 14px;display:flex;align-items:center;gap:8px;margin-bottom:10px;border:1px solid var(--bd)}
+.srch input{border:0;margin:0;background:none}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:12px;background:var(--bg);color:var(--tx);font:inherit;margin:3px 0 8px;outline:0}
+label{font-size:13px;color:var(--mut)}label.k{display:block;color:var(--tx)}label.k input{width:auto;margin:0 6px 0 0}
+.li{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--bd);cursor:pointer}.li>div:nth-child(2){flex:1;min-width:0}
+.av{border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:#222;flex:none;overflow:hidden}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.tag{font-size:11px;background:var(--bd);border-radius:6px;padding:2px 6px}
+.fab{position:fixed;right:16px;bottom:calc(128px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;box-shadow:0 4px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;padding:0;z-index:9}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);box-shadow:0 -2px 10px rgba(0,0,0,.08)}
+.nav{display:flex;max-width:640px;margin:auto}.nv{flex:1;text-align:center;padding:7px 2px;font-size:11.5px;color:var(--mut);cursor:pointer}
+.nv span{display:block;font-size:20px;border-radius:14px;padding:2px 0;margin:0 8px 1px}.nv.on{color:var(--pri);font-weight:700}.nv.on span{background:color-mix(in srgb,var(--pri) 16%,transparent)}
+#bn{background:#fff8d6;color:#5a4a00;text-align:center;padding:7px 8px calc(7px + env(safe-area-inset-bottom,0px));font-size:12.5px;border-top:1px solid #e6d98a}
+.ph{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:12px 14px;display:flex;align-items:center;gap:12px;font-size:18px}.ph button{background:rgba(255,255,255,.2);padding:4px 11px;font-size:18px}
+main{padding:12px;max-width:640px;margin:auto}
+.cd{padding:12px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd);position:relative}.cd button.b{background:none;color:var(--tx);font-size:22px;padding:4px 8px}
+.dm{position:absolute;right:10px;top:54px;background:var(--card);border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:6;overflow:hidden}.dm div{padding:13px 22px;cursor:pointer}
+.two{display:flex;gap:10px}.two>div{flex:1}.big{width:100%;padding:14px;border-radius:30px;font-size:17px;margin-top:6px}
+.hero{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border-radius:18px;padding:18px;margin-bottom:12px}.hero b{font-size:32px;display:block}
+.call{display:inline-block;margin-top:6px;background:color-mix(in srgb,var(--pri) 15%,transparent);color:var(--pri);border-radius:20px;padding:5px 12px;font-size:13px;text-decoration:none}
+.hi{vertical-align:-5px}
+#ov{position:fixed;inset:0;z-index:30;display:none}#ov.on{display:block}.sc{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.bs{position:absolute;left:0;right:0;bottom:0;background:var(--card);border-radius:24px 24px 0 0;padding:16px;max-height:80vh;overflow:auto}
+.dr{position:absolute;left:0;top:0;bottom:0;width:80%;max-width:330px;background:var(--card);overflow:auto;padding-top:env(safe-area-inset-top,0px)}
+.dr .it{padding:14px 18px;display:flex;gap:14px;cursor:pointer;align-items:center}.dr h4{margin:14px 18px 2px;color:var(--pri)}
+#modal,#ad{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:60;padding:16px}
+.box{background:var(--card);border-radius:16px;padding:16px;width:100%;max-width:420px;max-height:88vh;overflow:auto}
+#ad{background:#0b3d27;color:#fff;flex-direction:column;text-align:center;z-index:70;gap:14px;font-size:22px}
+#toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:8px 14px;border-radius:20px;font-size:13px;z-index:80;display:none}
+.pw{position:relative}.pw input{padding-right:44px}.eye{position:absolute;right:4px;top:6px;background:none;font-size:18px;padding:4px 8px}
+.logo{text-align:center;margin:20px 0 14px}.logo>div:first-child{font-size:48px}.logo .m{font-size:14px}.logo h2{margin:4px 0;color:var(--pri)}
+@media print{.dock,.cd button,#ov,body::before{display:none!important}}
+.nv span{position:relative}.bd{position:absolute;top:-4px;right:2px;background:#e53935;color:#fff;border-radius:10px;font-size:10px;font-style:normal;padding:1px 5px;min-width:16px;line-height:14px}
+.ib i{background:#e53935!important;color:#fff!important}
+</style></head><body>
+<div id="app"></div><div id="ov"></div><div id="modal"></div><div id="ad"></div><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),KEY='tihan_v1';
+let db,me,page=null,cb='all',tb=null,cur=null,q='',lang='bn',nextAd=0,ai=0,drawer=0,sheet=0,menu=0;
+try{lang=localStorage.getItem('tihan_lang')||'bn'}catch(e){}
+const uid=()=>crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=='x'?r:r&3|8).toString(16)});
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bn=n=>Number(n).toLocaleString(lang=='bn'?'bn-BD':'en-US');
+const today=()=>new Date().toLocaleDateString(lang=='bn'?'bn-BD':'en-GB');
+const HI='<svg class="hi" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9.5" r="3.6"/><path d="M5 11a7 7 0 0 1 14 0"/><rect x="3.8" y="10.5" width="2.6" height="4.2" rx="1.1"/><rect x="17.6" y="10.5" width="2.6" height="4.2" rx="1.1"/><path d="M18.9 14.7c0 2-1.6 3-4 3"/><path d="M5 21c.6-3 3.4-4.4 7-4.4s6.4 1.4 7 4.4"/></svg>';
+const IB='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13l2.5-7h11L20 13v6H4z"/><path d="M4 13h5l1 2h4l1-2h5"/></svg>';
+const ADD='<svg viewBox="0 0 24 24" width="27" height="27" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="8" r="3.6"/><path d="M3.5 20c.6-3.6 3.2-5.5 6.5-5.5M18 11v6M15 14h6"/></svg>';
+const SB_URL='https://gphyarcuplsghdyxtbuw.supabase.co',SB_KEY='sb_publishable_TtxxzzDdaDcarIqZZqBFiQ_k21U8bU7';
+let sb=null,SN={biz:{},tx:{},notes:{},vouchers:{}},pushing=false,pt=null,UID=null,FORCE=false;
+try{sb=supabase.createClient(SB_URL,SB_KEY)}catch(e){}
+const nd=s=>String(s||'').replace(/[\u09e6-\u09ef]/g,d=>'\u09e6\u09e7\u09e8\u09e9\u09ea\u09eb\u09ec\u09ed\u09ee\u09ef'.indexOf(d)).replace(/\s/g,'');
+const tm=t=>t?new Date(t).toLocaleTimeString(lang=='bn'?'bn-BD':'en-US',{hour:'2-digit',minute:'2-digit'}):'';
+const fts=t=>t?new Date(t).toLocaleDateString(lang=='bn'?'bn-BD':'en-GB'):today();
+const MAP={
+biz:{t:'businesses',row:b=>({id:b.id,name:b.name,helpline:b.help||null}),from:r=>({id:r.id,name:r.name,help:r.helpline||''})},
+tx:{t:'transactions',row:x=>({id:x.id,business_id:x.biz,customer_id:x.cust,type:x.type,amount:Number(x.amt),note:x.note||null,tx_date:x.iso||iso0()}),from:r=>({id:r.id,biz:r.business_id,cust:r.customer_id,type:r.type,amt:Number(r.amount),note:r.note||'',iso:r.tx_date,time:tm(r.created_at)})},
+notes:{t:'notices',row:n=>({id:n.id,business_id:n.biz,from_user:n.from,to_user:n.to=='all'?null:n.to,body:n.text,approved:!!n.ok}),from:r=>({id:r.id,biz:r.business_id,from:r.from_user,to:r.to_user||'all',text:r.body,ok:r.approved,date:fts(r.created_at)})},
+vouchers:{t:'vouchers',row:v=>({id:v.id,business_id:v.biz,customer_id:v.cust,body:v.text,media:v.media||null}),from:r=>({id:r.id,biz:r.business_id,cust:r.customer_id,text:r.body,media:r.media||'',date:fts(r.created_at)})}};
+const isP=t=>SN.tx[t.id]===undefined;
+const idle=()=>!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement&&document.activeElement.tagName)&&$('#modal').style.display!='flex';
+const isNet=e=>!navigator.onLine||/fetch|network|Load failed/i.test((e&&e.message)||'');
+function persist(){if(!UID||!db)return;try{localStorage.setItem('tihan_c_'+UID,JSON.stringify({db,SN}))}catch(e){}}
+function loadCache(id){db={biz:[],users:[],tx:[],notes:[],vouchers:[]};SN={biz:{},tx:{},notes:{},vouchers:{}};try{const c=JSON.parse(localStorage.getItem('tihan_c_'+id));if(c&&c.db){db=c.db;SN=c.SN}}catch(e){}}
+function snapAll(){for(const k in MAP){SN[k]={};db[k].forEach(x=>SN[k][x.id]=JSON.stringify(MAP[k].row(x)))}}
+function hasDiff(){if(!db)return false;for(const k in MAP){const M=MAP[k],o=SN[k],ids=new Set();for(const x of db[k]){ids.add(x.id);if(o[x.id]!==JSON.stringify(M.row(x)))return true}for(const id in o)if(!ids.has(id))return true}return false}
+async function fa(t,cols){let out=[],i=0;while(1){let q=sb.from(t).select('*');cols.forEach(c=>q=q.order(c));const{data,error}=await q.range(i,i+999);if(error)throw error;out=out.concat(data);if(data.length<1000)return out;i+=1000}}
+async function push(){if(pushing||!sb||!db||!navigator.onLine)return 0;pushing=true;let n=0;
+try{for(const k of['biz','tx','notes','vouchers']){const M=MAP[k],o=SN[k],cur={};db[k].forEach(x=>cur[x.id]=x);
+for(const id of Object.keys(o)){if(cur[id])continue;const{error}=await sb.from(M.t).delete().eq('id',id);if(error&&isNet(error))throw'net';if(error){toast(error.message);FORCE=true}delete o[id];n++}
+for(const x of db[k]){const row=M.row(x),js=JSON.stringify(row),old=o[x.id];if(old===js)continue;
+const r=old===undefined?await sb.from(M.t).insert(row):await sb.from(M.t).update(row).eq('id',x.id);
+if(r.error&&isNet(r.error))throw'net';if(r.error&&r.error.code!=='23505'){toast(r.error.message);FORCE=true}o[x.id]=js;n++}}}
+catch(e){if(e!=='net')console.error(e)}
+pushing=false;persist();return n}
+async function pull(){await push();if(hasDiff())return false;
+const[b,p,m,t,n,v]=await Promise.all([fa('businesses',['created_at','id']),fa('profiles',['created_at','id']),fa('memberships',['user_id','business_id']),fa('transactions',['tx_date','created_at','id']),fa('notices',['created_at','id']),fa('vouchers',['created_at','id'])]);
+const mem={};m.forEach(r=>(mem[r.user_id]=mem[r.user_id]||[]).push(r.business_id));
+db={biz:b.map(MAP.biz.from),users:p.map(r=>({id:r.id,role:r.role,name:r.name,phone:r.phone,photo:r.photo||'',biz:mem[r.id]||[]})),tx:t.map(MAP.tx.from),notes:n.map(MAP.notes.from),vouchers:v.map(MAP.vouchers.from)};
+snapAll();if(me)me=db.users.find(u=>u.id==me.id)||me;persist();return true}
+function save(){persist();clearTimeout(pt);pt=setTimeout(async()=>{await push();if(FORCE){FORCE=false;try{await pull()}catch(e){}}if(idle())render()},400)}
+async function syncNow(m){if(!me||!sb||!db)return;if(!navigator.onLine){if(idle())render();return}const had=hasDiff(),b4=JSON.stringify(db),n0=inboxN();try{await push();await pull();if(inboxN()>n0){toast('\ud83d\udce2 \u09a8\u09a4\u09c1\u09a8 \u09a8\u09cb\u099f\u09bf\u09b6 \u098f\u09b8\u09c7\u099b\u09c7');try{navigator.vibrate&&navigator.vibrate(200)}catch(e){}}if((had||JSON.stringify(db)!==b4)&&idle())render();if(had&&m)toast('\u0985\u09ab\u09b2\u09be\u0987\u09a8 \u09a1\u09c7\u099f\u09be \u09b8\u09bf\u0999\u09cd\u0995 \u09b9\u09af\u09bc\u09c7\u099b\u09c7 \u2713')}catch(e){}}
+async function callFn(body){const{data:{session}}=await sb.auth.getSession();if(!session)return{data:null,error:{message:'login required'}};return sb.functions.invoke('manage-user',{body,headers:{Authorization:'Bearer '+session.access_token}})}
+async function fnErr(error,data){if(data&&data.error)return data.error;try{const c=error.context,t=await c.text();let m=t;try{const j=JSON.parse(t);m=j.error||j.message||t}catch(e){}return 'Error '+(c.status||'')+': '+m}catch(e){return 'Error: '+((error&&error.message)||'unknown')}}
+const U=id=>db.users.find(u=>u.id==id)||{name:'?',biz:[]},B=id=>db.biz.find(b=>b.id==id)||{name:'?'};
+const myBiz=()=>me.role=='master'?db.biz.map(b=>b.id):me.biz;
+const sel=()=>cb=='all'?myBiz():myBiz().includes(cb)?[cb]:myBiz();
+const balS=c=>db.tx.filter(t=>t.cust==c&&sel().includes(t.biz)).reduce((s,t)=>s+(t.type=='due'?1:-1)*t.amt,0);
+const allC=()=>db.users.filter(u=>u.role=='customer'&&(me.role=='master'||u.biz.some(b=>me.biz.includes(b))));
+const myCusts=()=>allC().filter(u=>(me.role=='master'&&cb=='all')||u.biz.some(b=>sel().includes(b)));
+const nBiz=b=>db.users.filter(u=>u.role=='customer'&&u.biz.includes(b)).length;
+const COL=['#c8e6c9','#fff3c4','#d6e4ff','#ffd9d9','#e3d4ff','#cdeef2'];
+const av=(u,s=46)=>`<span class="av" style="width:${s}px;height:${s}px;background:${COL[[...u.name].reduce((a,c)=>a+c.charCodeAt(0),0)%6]}">${u.photo?`<img src="${u.photo}" style="width:100%;height:100%;object-fit:cover" alt="">`:esc(u.name.slice(0,2).toUpperCase())}</span>`;
+const money=n=>`<span class="${n>0?'due':'ok'}">${n>0?'\u09aa\u09be\u09ac\u09cb':'\u09a6\u09c7\u09ac\u09cb'} \u09f3${bn(Math.abs(n))}</span>`;
+const myNotes=()=>db.notes.filter(n=>n.ok&&(n.to==me.id||(n.to=='all'&&me.biz.includes(n.biz)))).reverse();
+let SEEN=null,NEW=new Set();
+const seenKey=()=>'tihan_seen_'+UID;
+const recv=()=>me.role=='master'?[]:db.notes.filter(n=>n.ok&&n.from!=me.id&&(n.to==me.id||(n.to=='all'&&me.biz.includes(n.biz))));
+function seen(){if(!SEEN){try{SEEN=new Set(JSON.parse(localStorage.getItem(seenKey())||'[]'))}catch(e){SEEN=new Set()}}return SEEN}
+function initSeen(){if(!me||!db)return;try{if(localStorage.getItem(seenKey())===null){SEEN=new Set(recv().map(n=>n.id));localStorage.setItem(seenKey(),JSON.stringify([...SEEN]))}}catch(e){}}
+function markSeen(){const s=seen();let ch=0;recv().forEach(n=>{if(!s.has(n.id)){s.add(n.id);ch=1}});if(ch)try{localStorage.setItem(seenKey(),JSON.stringify([...s]))}catch(e){}}
+const unseenIds=()=>recv().filter(n=>!seen().has(n.id)).map(n=>n.id);
+const inboxN=()=>me.role=='master'?db.notes.filter(n=>!n.ok).length:unseenIds().length;
+const snd=n=>n.from==me.id?'\u0986\u09ae\u09bf':(U(n.from).name!='?'?U(n.from).name:'\u09ae\u09be\u09b8\u09cd\u099f\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8');
+function toast(t){const e=$('#toast');e.textContent=tr(t);e.style.display='block';setTimeout(()=>e.style.display='none',2200)}
+function cm(){$('#modal').style.display='none'}
+function modal(t,f,ok){const m=$('#modal');
+m.innerHTML=`<div class="box"><h3 style="margin:0 0 8px">${t}</h3>${f.map(x=>`<label>${x.l}</label>`+(x.c?x.c.map(o=>`<label class="k"><input type="checkbox" name="f_${x.k}" value="${o[0]}" ${(x.v||[]).includes(o[0])?'checked':''}>${esc(o[1])}</label>`).join(''):x.o?`<select id="f_${x.k}">${x.o.map(o=>`<option value="${o[0]}" ${o[0]==x.v?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`:x.t=='area'?`<textarea id="f_${x.k}" rows="3">${esc(x.v)}</textarea>`:`<input id="f_${x.k}" type="${x.t||'text'}" value="${esc(x.v)}">`)).join('')}<div class="row sp"><button class="g" onclick="cm()">\u09ac\u09be\u09a4\u09bf\u09b2</button><button onclick="sv()">\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09a3</button></div></div>`;
+m.style.display='flex';trDom(m);
+window.sv=async()=>{const r={};f.forEach(x=>r[x.k]=x.c?[...document.querySelectorAll(`[name=f_${x.k}]:checked`)].map(i=>i.value):$('#f_'+x.k).value);if(await ok(r)!==false)cm()}}
+const bizOpts=()=>myBiz().map(b=>[b,B(b).name]);
+function bizForm(id){const b=db.biz.find(x=>x.id==id)||{},adm=me.role=='admin';
+modal(id?'\u09ac\u09cd\u09af\u09ac\u09b8\u09be \u09b8\u09ae\u09cd\u09aa\u09be\u09a6\u09a8\u09be':'\u09a8\u09a4\u09c1\u09a8 \u09ac\u09cd\u09af\u09ac\u09b8\u09be',[...(adm?[]:[{k:'name',l:'\ud83c\udfea \u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09a8\u09be\u09ae',v:b.name}]),{k:'help',l:HI+' \u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8 / \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u09a8\u09ae\u09cd\u09ac\u09b0',v:b.help,t:'tel'}],r=>{if(!adm&&!r.name.trim())return false;
+if(id)Object.assign(b,r);else db.biz.push({id:uid(),...r});save();render()})}
+function userForm(id,role){const u=db.users.find(x=>x.id==id)||{};role=u.role||role;
+const f=[{k:'name',l:'\u09a8\u09be\u09ae',v:u.name},{k:'phone',l:'\u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0 / \u0987\u0989\u099c\u09be\u09b0 \u0986\u0987\u09a1\u09bf',v:u.phone,t:'tel'},{k:'pass',l:id?'\u09a8\u09a4\u09c1\u09a8 \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 (\u09ac\u09a6\u09b2\u09be\u09a4\u09c7 \u099a\u09be\u0987\u09b2\u09c7 \u09b2\u09bf\u0996\u09c1\u09a8)':'\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 (\u0995\u09ae\u09aa\u0995\u09cd\u09b7\u09c7 \u09ec \u0985\u0995\u09cd\u09b7\u09b0)',v:''}];
+if(me.role=='master'&&role!='master')f.push({k:'biz',l:role=='admin'?'\u09af\u09c7 \u09ac\u09cd\u09af\u09ac\u09b8\u09be \u09a6\u09c7\u0996\u09ac\u09c7':'\u09af\u09c7 \u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09c1\u0995\u09cd\u09a4',c:db.biz.map(b=>[b.id,b.name]),v:u.biz||(cb!='all'?[cb]:[])});
+modal(id?'\u09a4\u09a5\u09cd\u09af \u09b8\u09ae\u09cd\u09aa\u09be\u09a6\u09a8\u09be':role=='admin'?'\u09a8\u09a4\u09c1\u09a8 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8':'\u09a8\u09a4\u09c1\u09a8 \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0',f,async r=>{
+const phone=nd(r.phone);
+if(!r.name.trim()||!phone||(!id&&!r.pass)){toast('\u09b8\u09ac \u0998\u09b0 \u09aa\u09c2\u09b0\u09a3 \u0995\u09b0\u09c1\u09a8');return false}
+if(r.pass&&r.pass.length<6){toast('\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u0995\u09ae\u09aa\u0995\u09cd\u09b7\u09c7 \u09ec \u0985\u0995\u09cd\u09b7\u09b0');return false}
+if(!navigator.onLine){toast('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return false}
+const body=id?{action:'update',id,name:r.name.trim(),phone,password:r.pass||undefined,biz:me.role=='master'&&role!='master'?r.biz:undefined}:{action:'create',role,name:r.name.trim(),phone,password:r.pass,biz:me.role=='admin'?(cb!='all'&&me.biz.includes(cb)?[cb]:[...me.biz]):r.biz};
+try{await push()}catch(e){}
+const{data,error}=await callFn(body);
+if(error||(data&&data.error)){alert(await fnErr(error,data));return false}
+try{await pull()}catch(e){}render();toast('\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7')})}
+function noteForm(cid){modal('\u09a8\u09a4\u09c1\u09a8 \u09a8\u09cb\u099f\u09bf\u09b6',[{k:'biz',l:'\u09ac\u09cd\u09af\u09ac\u09b8\u09be',o:bizOpts()},{k:'to',l:'\u0995\u09be\u0995\u09c7',o:[['all','\u0993\u0987 \u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09b8\u09ac\u09be\u0987\u0995\u09c7'],...(me.role=='master'?db.users.filter(u=>u.role=='admin').map(u=>[u.id,'\ud83d\udee1\ufe0f '+u.name]):[]),...allC().map(c=>[c.id,c.name])],v:cid||'all'},{k:'text',l:'\u09a8\u09cb\u099f\u09bf\u09b6',t:'area'}],r=>{
+if(!r.text.trim())return false;db.notes.push({id:uid(),from:me.id,...r,ok:me.role=='master',date:today()});save();render();toast(me.role=='master'?'\u09a8\u09cb\u099f\u09bf\u09b6 \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4':'\u09ae\u09be\u09b8\u09cd\u099f\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8\u09c7\u09b0 \u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09a8\u09c7\u09b0 \u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09be\u09af\u09bc')})}
+function vcForm(cid){modal('\u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a6\u09bf\u09a8',[{k:'biz',l:'\u09ac\u09cd\u09af\u09ac\u09b8\u09be',o:bizOpts()},{k:'text',l:'\u09ad\u09be\u0989\u099a\u09be\u09b0\u09c7\u09b0 \u09ac\u09bf\u09ac\u09b0\u09a3 (\u09af\u09c7\u09ae\u09a8: \u09e7\u09e6% \u099b\u09be\u09a1\u09bc)',t:'area'}],r=>{
+if(!r.text.trim())return false;db.vouchers.push({id:uid(),cust:cid,...r,date:today()});save();toast('\u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a6\u09c7\u0993\u09af\u09bc\u09be \u09b9\u09af\u09bc\u09c7\u099b\u09c7')})}
+function approve(id){db.notes.find(n=>n.id==id).ok=true;save();render()}
+function delTx(id){if(confirm(tr('\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?'))){db.tx=db.tx.filter(t=>t.id!=id);save();render()}}
+function delCust(){if(confirm(tr('\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?'))){db.users=db.users.filter(u=>u.id!=cur);db.tx=db.tx.filter(t=>t.cust!=cur);go(null)}}
+function saveTx(){const a=parseFloat($('#a1').value)||0,p=parseFloat($('#a2').value)||0;if(!(a>0||p>0)){toast('\u09b8\u09a0\u09bf\u0995 \u099f\u09be\u0995\u09be \u09a6\u09bf\u09a8');return}
+const b=$('#tb').value,n=$('#dn').value,dd=$('#dd').value||iso0(),d=!navigator.onLine,mk=(type,amt)=>db.tx.push({id:uid(),biz:b,cust:cur,type,amt,note:n,date:fmtD(dd),iso:dd,time:new Date().toLocaleTimeString(lang=='bn'?'bn-BD':'en-US',{hour:'2-digit',minute:'2-digit'}),pend:d});
+if(a>0)mk('due',a);if(p>0)mk('paid',p);save();render();toast(d?'\u0985\u09ab\u09b2\u09be\u0987\u09a8\u09c7 \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4, \u0985\u09a8\u09b2\u09be\u0987\u09a8\u09c7 \u0997\u09c7\u09b2\u09c7 \u09b8\u09bf\u0999\u09cd\u0995 \u09b9\u09ac\u09c7':'\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7')}
+function photo(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=120;const x=c.getContext('2d'),s=Math.min(im.width,im.height);x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,120,120);const ph=c.toDataURL('image/jpeg',.7);if(!navigator.onLine){toast('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return}sb.from('profiles').update({photo:ph}).eq('id',me.id).then(r=>{if(r.error){toast(r.error.message);return}me.photo=ph;persist();render()})};im.src=r.result};r.readAsDataURL(f)}
+let RK='bill',RC=null,RB=null;
+const E1=n=>String(Math.round(n));
+function remMsg(k,cid,b){const L=db.tx.filter(t=>t.cust==cid&&t.biz==b),bal=L.reduce((a,t)=>a+(t.type=='due'?1:-1)*t.amt,0),d=new Date(),p2=n=>String(n).padStart(2,'0'),ds=p2(d.getDate())+'-'+p2(d.getMonth()+1)+'-'+d.getFullYear(),hp=B(b).help||me.phone||'';
+if(k=='bill')return '\u098f\u0987 \u09ae\u09be\u09b8\u09c7\u09b0 \u09ac\u09bf\u09b2:\n\u09ae\u09cb\u099f \u09ac\u0995\u09c7\u09af\u09bc\u09be: '+E1(Math.max(bal,0))+'\n\u09a4\u09be\u09b0\u09bf\u0996: '+ds+'\n\u09ac\u09bf\u09b2 \u09ae\u09be\u09b8: '+d.toLocaleDateString('bn-BD',{month:'long'})+' '+d.getFullYear()+'\n\u09aa\u09cd\u09b0\u09a4\u09bf\u09b7\u09cd\u09a0\u09be\u09a8\u09c7\u09b0 \u09a8\u09be\u09ae: '+B(b).name+'\n\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8: '+hp;
+const t=L[L.length-1],td=t&&t.iso?t.iso.split('-').reverse().join('-'):ds;
+return '\u09aa\u09b0\u09bf\u09b6\u09cb\u09a7: '+E1(t&&t.type=='paid'?t.amt:0)+'\n\u09ac\u09be\u0995\u09bf: '+E1(Math.max(bal,0))+'\n\u09a4\u09be\u09b0\u09bf\u0996: '+td+'\n\u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09af\u09bc\u09c7\u09b0 \u09a8\u09be\u09ae: '+B(b).name+'\n\u09a7\u09a8\u09cd\u09af\u09ac\u09be\u09a6'}
+function remind(cid){RC=cid;RB=$('#tb')?$('#tb').value:U(cid).biz.find(x=>myBiz().includes(x));RK='bill';remShow()}
+function remShow(){const m=$('#modal');m.innerHTML=`<div class="box"><h3 style="margin:0 0 8px">\ud83d\udcac \u09a4\u09be\u0997\u09be\u09a6\u09be \u09ac\u09be\u09b0\u09cd\u09a4\u09be</h3><div class="row" style="gap:6px;margin-bottom:8px"><button class="s ${RK=='bill'?'':'g'}" onclick="RK='bill';remShow()">\u09ae\u09be\u09b8\u09bf\u0995 \u09ac\u09bf\u09b2</button><button class="s ${RK=='tx'?'':'g'}" onclick="RK='tx';remShow()">\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 \u09ac\u09be\u09b0\u09cd\u09a4\u09be</button></div><textarea id="rm" rows="9"></textarea><div class="row sp" style="margin-top:8px"><button class="g" onclick="cm()">\u09ac\u09a8\u09cd\u09a7</button><button class="s g" onclick="remCopy()">\ud83d\udccb \u0995\u09aa\u09bf</button><button class="s g" onclick="remShare()">\ud83d\udce4 \u09b6\u09c7\u09af\u09bc\u09be\u09b0</button><button class="s" onclick="remSms()">\ud83d\udcac SMS</button></div></div>`;m.style.display='flex';$('#rm').value=remMsg(RK,RC,RB)}
+function remCopy(){const v=$('#rm').value;if(navigator.clipboard)navigator.clipboard.writeText(v).then(()=>toast('\u0995\u09aa\u09bf \u09b9\u09af\u09bc\u09c7\u099b\u09c7'));else toast('\u0995\u09aa\u09bf \u0995\u09b0\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf')}
+function remShare(){const v=$('#rm').value;if(navigator.share)navigator.share({text:v}).catch(()=>{});else remCopy()}
+function remSms(){location.href='sms:'+U(RC).phone+'?body='+encodeURIComponent($('#rm').value)}
+function go(p,c){if(p=='nt'&&page!='nt')NEW=new Set();if(p=='tx'&&page!='tx')tb=null;page=p;if(c)cur=c;drawer=sheet=menu=0;render();scrollTo(0,0)}
+function txRows(list,del){return list.length?list.slice().reverse().map(t=>`<div class="c"><div class="row sp"><b>${esc(U(t.cust).name)}</b><span class="${t.type=='due'?'due':'ok'}">${t.type=='due'?'\u09ac\u09be\u0995\u09bf':'\u099c\u09ae\u09be'} \u09f3${bn(t.amt)}</span></div><div class="m">${esc(B(t.biz).name)} \u00b7 ${t.iso?fmtD(t.iso):t.date}${isP(t)?' <span class="tag">\u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09ae\u09be\u09a8 \u09b8\u09bf\u0999\u09cd\u0995</span>':''}</div>${t.note?`<div>${esc(t.note)}</div>`:''}${del?`<button class="s g" onclick="editTx('${t.id}')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</button> <button class="s r" onclick="delTx('${t.id}')">\ud83d\uddd1\ufe0f \u09ae\u09c1\u099b\u09c1\u09a8</button>`:''}</div>`).join(''):'<p class="m">\u0995\u09bf\u099b\u09c1 \u09a8\u09c7\u0987</p>'}
+const visTx=()=>db.tx.filter(t=>sel().includes(t.biz)&&(me.role=='customer'?t.cust==me.id:1));
+const P={
+biz:()=>`${me.role=='master'?'<button onclick="bizForm()">\u2795 \u09a8\u09a4\u09c1\u09a8 \u09ac\u09cd\u09af\u09ac\u09b8\u09be</button><br><br>':''}${db.biz.filter(b=>myBiz().includes(b.id)).map(b=>`<div class="c"><div class="row sp"><b>\ud83c\udfea ${esc(b.name)}</b><span><button class="s g" onclick="bizForm('${b.id}')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</button>${me.role=='master'?` <button class="s r" onclick="delBiz('${b.id}')">\ud83d\uddd1\ufe0f</button>`:''}</span></div><div class="m">${HI} ${esc(b.help||'\u09a8\u09ae\u09cd\u09ac\u09b0 \u09a8\u09c7\u0987')}</div><div class="m">\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8: ${esc(db.users.filter(u=>u.role=='admin'&&u.biz.includes(b.id)).map(u=>u.name).join(', ')||'\u09a8\u09c7\u0987')} \u00b7 \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 ${bn(nBiz(b.id))}</div></div>`).join('')}`,
+adm:()=>`<button onclick="userForm(null,'admin')">\u2795 \u09a8\u09a4\u09c1\u09a8 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8</button><br><br>${db.users.filter(u=>u.role=='admin').map(u=>`<div class="c"><div class="row sp"><b>\ud83d\udee1\ufe0f ${esc(u.name)}</b><span><button class="s g" onclick="userForm('${u.id}')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</button> <button class="s r" onclick="delUser('${u.id}')">\ud83d\uddd1\ufe0f</button></span></div><div class="m">\ud83d\udcf1 ${esc(u.phone)}</div><div class="m">\u09ac\u09cd\u09af\u09ac\u09b8\u09be: ${esc(u.biz.map(b=>B(b).name).join(', ')||'\u09a8\u09bf\u09b0\u09cd\u09a7\u09be\u09b0\u09bf\u09a4 \u09a8\u09af\u09bc')}</div></div>`).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8 \u09a8\u09c7\u0987</p>'}`,
+tx:()=>me.role=='customer'?((tb&&myBiz().includes(tb))?`<div class="c"><div class="row sp"><b>\ud83c\udfea ${esc(B(tb).name)}</b><button class="s g" onclick="tb=null;render()">\u09b8\u09ac \u09ac\u09cd\u09af\u09ac\u09b8\u09be</button></div></div>`:'')+repBody(me.id):txRows(visTx(),1),
+nt:()=>{const row=n=>`<div class="c"><div class="row sp"><b>\ud83c\udfea ${esc(B(n.biz).name)}</b><span>${NEW.has(n.id)?'<span class="tag" style="background:#e53935;color:#fff">\u09a8\u09a4\u09c1\u09a8</span> ':''}${me.role!='customer'?`<span class="tag">${n.ok?'\u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09bf\u09a4':'\u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09ae\u09be\u09a8'}</span>`:''}</span></div><div>${esc(n.text)}</div><div class="m">${esc(snd(n))}${me.role!='customer'?' \u2192 '+(n.to=='all'?'\u09b8\u09ac\u09be\u0987':esc(U(n.to).name)):''} \u00b7 ${n.date}</div>${me.role=='master'&&!n.ok?`<button class="s" onclick="approve('${n.id}')">\u2705 \u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09a8 \u09a6\u09bf\u09a8</button>`:''}</div>`;
+if(me.role=='customer')return myNotes().map(row).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u09a8\u09cb\u099f\u09bf\u09b6 \u09a8\u09c7\u0987</p>';
+return `<button onclick="noteForm()">\u2795 \u09a8\u09a4\u09c1\u09a8 \u09a8\u09cb\u099f\u09bf\u09b6</button><br><br>${db.notes.slice().reverse().map(row).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u09a8\u09cb\u099f\u09bf\u09b6 \u09a8\u09c7\u0987</p>'}`},
+vc:()=>(db.vouchers.filter(v=>me.role=='customer'?v.cust==me.id:myBiz().includes(v.biz)).reverse().map(v=>`<div class="c">\ud83c\udf9f\ufe0f <b>${esc(B(v.biz).name)}</b>${me.role!='customer'?' \u2192 '+esc(U(v.cust).name):''}<div>${esc(v.text)}</div><div class="m">${v.date}</div></div>`).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a8\u09c7\u0987</p>'),
+help:()=>myBiz().map(b=>`<div class="c"><div class="row sp"><b>\ud83c\udfea ${esc(B(b).name)}</b>${me.role!='customer'?`<button class="s g" onclick="bizForm('${b}')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</button>`:''}</div>${B(b).help?`<a class="call" href="tel:${esc(B(b).help)}">${HI} ${esc(B(b).help)}</a>`:'<div class="m">\u09a8\u09ae\u09cd\u09ac\u09b0 \u09a8\u09c7\u0987</div>'}</div>`).join(''),
+pf:()=>me.role=='customer'?`<div class="c" style="text-align:center">${av(me,80)}<br><br><label>\u099b\u09ac\u09bf \u09aa\u09b0\u09bf\u09ac\u09b0\u09cd\u09a4\u09a8 \u0995\u09b0\u09c1\u09a8</label><input type="file" accept="image/*" onchange="photo(this)"><h3>${esc(me.name)}</h3><div class="m">\ud83d\udcf1 ${esc(me.phone)}</div><p class="m">\u09a8\u09be\u09ae, \u09a8\u09ae\u09cd\u09ac\u09b0 \u09ac\u09be \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09ac\u09a6\u09b2\u09be\u09a4\u09c7 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8\u09c7\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u0995\u09b0\u09c1\u09a8\u0964</p></div>`:`<div class="c" style="text-align:center">${av(me,80)}<h3>${esc(me.name)}</h3><div class="m">\ud83d\udcf1 ${esc(me.phone)}</div>${me.role=='master'?`<div class="m">\ud83d\udd12 \u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</div><br><button onclick="userForm('${me.id}')">\u270f\ufe0f \u0986\u09ae\u09be\u09b0 \u09a4\u09a5\u09cd\u09af \u098f\u09a1\u09bf\u099f \u0995\u09b0\u09c1\u09a8</button>`:''}</div>`};
+const iso0=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const fmtD=i=>new Date(i+'T00:00:00').toLocaleDateString(lang=='bn'?'bn-BD':'en-GB',{day:'numeric',month:'long',year:'numeric'});
+function repBody(cid){const cu=me.role=='customer',l=db.tx.filter(t=>t.cust==cid&&((cu&&tb&&myBiz().includes(tb))?[tb]:myBiz()).includes(t.biz)).sort((a,b)=>(a.iso||'').localeCompare(b.iso||''));let r=0;
+const rows=l.map(t=>{r+=(t.type=='due'?1:-1)*t.amt;return{t,r}}).reverse(),d=l.filter(t=>t.type=='due').reduce((a,t)=>a+t.amt,0),p=l.filter(t=>t.type=='paid').reduce((a,t)=>a+t.amt,0),G='display:grid;grid-template-columns:1.5fr 1fr 1fr;';
+return `<div style="${G}background:var(--card);border-radius:12px 12px 0 0;padding:10px;font-weight:600;color:var(--mut)"><div>\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8\u09c7\u09b0 \u09ac\u09bf\u09ac\u09b0\u09a3</div><div style="text-align:center">${cu?'\u09ac\u09be\u0995\u09bf \u09a8\u09bf\u09b2\u09be\u09ae':'\u09a6\u09bf\u09b2\u09be\u09ae'}</div><div style="text-align:center">${cu?'\u099c\u09ae\u09be \u09a6\u09bf\u09b2\u09be\u09ae':'\u09aa\u09c7\u09b2\u09be\u09ae'}</div></div>${rows.map(({t,r})=>`<div ${cu?'':`onclick="editTx('${t.id}')"`} style="${G}border-bottom:1px solid var(--bd);padding:10px;background:var(--card)"><div><b>${t.iso?fmtD(t.iso):t.date}</b><div class="m">${t.time||''} \u00b7 ${esc(B(t.biz).name)}</div>${t.note?`<div>${esc(t.note)}</div>`:''}<span class="tag" style="color:${r>0?'var(--red)':'var(--grn)'}">${r>0?(cu?'\u09a6\u09c7\u09a8\u09be':'\u09aa\u09be\u09ac\u09cb'):(cu?'\u099c\u09ae\u09be':'\u09a6\u09c7\u09ac\u09cb')} ${bn(Math.abs(r))}</span>${isP(t)?' <span class="tag">\u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09ae\u09be\u09a8 \u09b8\u09bf\u0999\u09cd\u0995</span>':''}</div><div style="text-align:center;background:rgba(211,47,47,.07);color:var(--red);font-weight:600">${t.type=='due'?bn(t.amt):''}</div><div style="text-align:center;color:var(--grn);font-weight:600">${t.type=='paid'?bn(t.amt):''}</div></div>`).join('')||'<div class="c m">\u0995\u09bf\u099b\u09c1 \u09a8\u09c7\u0987</div>'}<div style="${G}padding:12px 10px;background:var(--card);border-radius:0 0 12px 12px;font-weight:700"><div>\u09ae\u09cb\u099f</div><div style="text-align:center" class="due">${bn(d)}</div><div style="text-align:center" class="ok">${bn(p)}</div></div>`}
+function repPage(){const c=U(cur),t=balS(c.id);return `<div class="cd"><button class="b" onclick="go('cust')">\u2190</button>${av(c,50)}<div style="flex:1"><b style="font-size:18px">${esc(c.name)}</b><div>${t>=0?'\u09aa\u09be\u09ac\u09cb':'\u09a6\u09c7\u09ac\u09cb'} <b class="${t>0?'due':'ok'}">\u09f3${bn(Math.abs(t))}</b></div></div><button class="b" style="font-size:13px;text-align:center" onclick="print()">\u2b07\ufe0f<br>\u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1</button></div><main>${repBody(c.id)}</main>`}
+function editTx(id){const t=db.tx.find(x=>x.id==id);if(!t)return;modal('\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 \u098f\u09a1\u09bf\u099f',[{k:'type',l:'\u09a7\u09b0\u09a8',o:[['due','\u09a6\u09bf\u09b2\u09be\u09ae/\u09ac\u09c7\u099a\u09be'],['paid','\u09aa\u09c7\u09b2\u09be\u09ae']],v:t.type},{k:'amt',l:'\u099f\u09be\u0995\u09be',t:'number',v:t.amt},{k:'note',l:'\u09ac\u09bf\u09ac\u09b0\u09a3',v:t.note},{k:'date',l:'\ud83d\udcc5 \u09a4\u09be\u09b0\u09bf\u0996',t:'date',v:t.iso||iso0()}],r=>{const a=parseFloat(r.amt);if(!(a>0)){toast('\u09b8\u09a0\u09bf\u0995 \u099f\u09be\u0995\u09be \u09a6\u09bf\u09a8');return false}Object.assign(t,{type:r.type,amt:a,note:r.note});if(r.date){t.iso=r.date;t.date=fmtD(r.date)}save();render()})}
+async function delUser(id){if(!confirm(tr('\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?')))return;if(!navigator.onLine){toast('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return}const{data,error}=await callFn({action:'delete',id});if(error||(data&&data.error)){alert(await fnErr(error,data));return}try{await pull()}catch(e){}go(page=='cust'?null:page)}
+function delBiz(id){if(confirm(tr('\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?'))){db.biz=db.biz.filter(b=>b.id!=id);db.tx=db.tx.filter(t=>t.biz!=id);db.users.forEach(u=>u.biz=(u.biz||[]).filter(x=>x!=id));if(cb==id)cb='all';save();render()}}
+const TITLE={biz:'\u09ac\u09cd\u09af\u09ac\u09b8\u09be',adm:'\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8',tx:'\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8',nt:'\u09a8\u09cb\u099f\u09bf\u09b6',vc:'\u09ad\u09be\u0989\u099a\u09be\u09b0',help:'\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8',pf:'\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2'};
+function gridH(){const g=me.role=='master'?[['\ud83c\udfea','\u09ac\u09cd\u09af\u09ac\u09b8\u09be','biz'],['\ud83d\udee1\ufe0f','\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8','adm'],['\ud83d\udcb0','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8','tx'],['\ud83d\udce2','\u09a8\u09cb\u099f\u09bf\u09b6','nt'],['\ud83c\udf9f\ufe0f','\u09ad\u09be\u0989\u099a\u09be\u09b0','vc'],[HI,'\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8','help'],['\ud83d\udc64','\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2','pf']]:me.role=='admin'?[['\ud83c\udfea','\u09ac\u09cd\u09af\u09ac\u09b8\u09be','biz'],['\ud83d\udcb0','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8','tx'],['\ud83d\udce2','\u09a8\u09cb\u099f\u09bf\u09b6','nt'],['\ud83c\udf9f\ufe0f','\u09ad\u09be\u0989\u099a\u09be\u09b0','vc'],[HI,'\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8','help'],['\ud83d\udc64','\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2','pf']]:[['\ud83d\udcb0','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8','tx'],['\ud83d\udce2','\u09a8\u09cb\u099f\u09bf\u09b6','nt'],['\ud83c\udf9f\ufe0f','\u09ad\u09be\u0989\u099a\u09be\u09b0','vc'],[HI,'\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8','help'],['\ud83d\udc64','\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2','pf']];
+return `<div class="grid">${g.map((x,i)=>`<div class="gi" onclick="go('${x[2]}')"><span class="gc c${i%4}">${x[0]}</span>${x[1]}</div>`).join('')}</div>`}
+function homeH(){const pend=db.tx.filter(isP).length,rl={master:'\u09ae\u09be\u09b8\u09cd\u099f\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8',admin:'\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8',customer:'\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0'}[me.role];
+let b=gridH();
+if(me.role=='customer'){const t=balS(me.id);b+=`<div class="hero"><div>\ud83d\udcbc \u09ae\u09cb\u099f ${t>0?'\u09a6\u09c7\u09a8\u09be':'\u099c\u09ae\u09be'}</div><b>\u09f3${bn(Math.abs(t))}</b></div>`+sel().map(x=>`<div class="c" style="cursor:pointer" onclick="go('tx');tb='${x}';render()"><div class="row sp"><b>\ud83c\udfea ${esc(B(x).name)}</b><span class="${balS2(x)>0?'due':'ok'}">${balS2(x)>0?'\u09a6\u09c7\u09a8\u09be':'\u099c\u09ae\u09be'} \u09f3${bn(Math.abs(balS2(x)))}</span></div><div class="m">\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 \u09a6\u09c7\u0996\u09c1\u09a8 \u203a</div>${B(x).help?`<a class="call" onclick="event.stopPropagation()" href="tel:${esc(B(x).help)}">${HI} ${esc(B(x).help)}</a>`:''}</div>`).join('')}
+else{const cs=myCusts(),bs=cs.map(c=>balS(c.id)),pay=bs.filter(x=>x>0).reduce((a,x)=>a+x,0),give=-bs.filter(x=>x<0).reduce((a,x)=>a+x,0),f=cs.filter(c=>(c.name+c.phone).toLowerCase().includes(q.toLowerCase()));
+b+=`<div class="tot"><div><b class="due">${bn(pay)}</b>\u09ae\u09cb\u099f \u09aa\u09be\u09ac\u09cb</div><div><b class="ok">${bn(give)}</b>\u09ae\u09cb\u099f \u09a6\u09c7\u09ac\u09cb</div></div><div class="srch">\ud83d\udd0d<input placeholder="\u0996\u09cb\u0981\u099c" value="${esc(q)}" oninput="q=this.value;lst()"></div><div class="m" style="margin:6px 2px">\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 ${bn(cs.length)}</div><div id="lst">${listH(f)}</div><button class="fab" onclick="userForm(null,'customer')">${ADD}</button>`}
+return `<div class="top"><div class="row sp"><div><button class="sel" onclick="sheet=1;render()">${cb=='all'||!myBiz().includes(cb)?'\u09b8\u09ac \u09ac\u09cd\u09af\u09ac\u09b8\u09be':esc(B(cb).name)} \u2304</button><div class="sub">${rl} \u00b7 ${navigator.onLine?'\ud83d\udfe2 \u0985\u09a8\u09b2\u09be\u0987\u09a8':'\ud83d\udd34 \u0985\u09ab\u09b2\u09be\u0987\u09a8'}${pend?' \u00b7 '+bn(pend)+' \u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09ae\u09be\u09a8':''}</div></div><div class="row" style="gap:2px"><div class="ib" onclick="go('nt')">${IB}${inboxN()?`<i>${bn(inboxN())}</i>`:''}\u0987\u09a8\u09ac\u0995\u09cd\u09b8</div><div class="ib" onclick="go('help')">${HI}\u09b8\u09be\u09aa\u09cb\u09b0\u09cd\u099f</div></div></div></div><div class="body">${b}</div>`}
+const balS2=b=>db.tx.filter(t=>t.cust==me.id&&t.biz==b).reduce((s,t)=>s+(t.type=='due'?1:-1)*t.amt,0);
+const listH=f=>f.map(c=>`<div class="li" onclick="go('cust','${c.id}')">${av(c)}<div><b>${esc(c.name)}</b><div class="m">${esc(c.phone)}</div></div><div>${money(balS(c.id))}</div></div>`).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 \u09a8\u09c7\u0987</p>';
+function lst(){const f=myCusts().filter(c=>(c.name+c.phone).toLowerCase().includes(q.toLowerCase()));$('#lst').innerHTML=listH(f);trDom($('#lst'))}
+function custH(){const c=U(cur),bs=c.biz.filter(x=>myBiz().includes(x)),dflt=bs.includes(cb)?cb:bs[0],t=balS(cur);
+return `<div class="cd"><button class="b" onclick="go(null)">\u2190</button>${av(c,50)}<div style="flex:1"><b style="font-size:18px">${esc(c.name)}</b><div class="m">\ud83d\udcf1 ${esc(c.phone)}</div></div><button class="b" onclick="menu=!menu;render()">\u22ee</button>${menu?`<div class="dm"><div onclick="menu=0;userForm('${cur}')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</div>${me.role=='master'?`<div onclick="delUser('${cur}')">\ud83d\uddd1\ufe0f \u09a1\u09bf\u09b2\u09bf\u099f</div>`:''}</div>`:''}</div>
+<main><div class="row sp" style="margin-bottom:12px"><div style="font-size:18px">${t>=0?'\u09aa\u09be\u09ac\u09cb':'\u09a6\u09c7\u09ac\u09cb'} <b class="${t>0?'due':'ok'}">\u09f3${bn(Math.abs(t))}</b></div><div class="row"><button class="s g" onclick="go('rep','${cur}')">\ud83d\udcc4 \u09b0\u09bf\u09aa\u09cb\u09b0\u09cd\u099f</button><button class="s g" onclick="remind('${cur}')">\ud83d\udcac</button><button class="s g" onclick="noteForm('${cur}')">\ud83d\udce2</button><button class="s g" onclick="vcForm('${cur}')">\ud83c\udf9f\ufe0f</button></div></div>
+<div class="two"><div><input id="a1" type="number" placeholder="\u09f3 \u09a6\u09bf\u09b2\u09be\u09ae/\u09ac\u09c7\u099a\u09be"></div><div><input id="a2" type="number" placeholder="\u09f3 \u09aa\u09c7\u09b2\u09be\u09ae"></div></div>
+<label>\ud83d\udcc5 \u09a4\u09be\u09b0\u09bf\u0996</label><input id="dd" type="date" value="${iso0()}" max="${iso0()}"><input id="dn" placeholder="\u270f\ufe0f \u09ac\u09bf\u09ac\u09b0\u09a3"><select id="tb">${bs.map(x=>`<option value="${x}" ${x==dflt?'selected':''}>${esc(B(x).name)}</option>`).join('')}</select>
+<button class="big" onclick="saveTx()">\u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4</button><br><br>${repBody(cur)}</main>`}
+function sheetH(){return `<div class="sc" onclick="sheet=0;render()"></div><div class="bs"><h3 style="margin:0 0 8px">\u09ac\u09cd\u09af\u09ac\u09b8\u09be</h3><div class="li" onclick="cb='all';sheet=0;render()"><div><b>\u09b8\u09ac \u09ac\u09cd\u09af\u09ac\u09b8\u09be</b></div>${cb=='all'?'\u2705':''}</div>${myBiz().map(b=>`<div class="li" onclick="cb='${b}';sheet=0;render()"><div><b>${esc(B(b).name)}</b><div class="m">\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 ${bn(nBiz(b))}</div></div>${cb==b?'\u2705':''}</div>`).join('')}${me.role=='master'?'<br><button class="g" style="width:100%" onclick="sheet=0;bizForm()">\u2795 \u09a8\u09a4\u09c1\u09a8 \u09ac\u09cd\u09af\u09ac\u09b8\u09be</button>':''}</div>`}
+function drawerH(){const it=(i,l,a)=>`<div class="it" onclick="${a}"><span style="width:26px;text-align:center">${i}</span>${l}</div>`,s=me.role!='customer';
+return `<div class="sc" onclick="drawer=0;render()"></div><div class="dr"><div class="it" style="background:color-mix(in srgb,var(--pri) 10%,transparent)" onclick="go('pf')">${av(me,54)}<div><b>${esc(me.name)}</b><div class="m">${esc(me.phone)}</div></div></div>
+<h4>Tihan Khata</h4>${s?it('\ud83c\udfea','\u09ac\u09cd\u09af\u09ac\u09b8\u09be',"go('biz')"):''}${me.role=='master'?it('\ud83d\udee1\ufe0f','\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8',"go('adm')"):''}${it('\ud83d\udcb0','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8',"go('tx')")}${it('\ud83d\udce2','\u09a8\u09cb\u099f\u09bf\u09b6',"go('nt')")}${it('\ud83c\udf9f\ufe0f','\u09ad\u09be\u0989\u099a\u09be\u09b0',"go('vc')")}${it(HI,'\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8',"go('help')")}<h4>\u2699\ufe0f</h4>${it('\ud83d\udc64','\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2',"go('pf')")}${it('\ud83c\udf10',lang=='bn'?'English':'\u09ac\u09be\u0982\u09b2\u09be','setLang()')}${it('\ud83d\udeaa','\u09b2\u0997\u0986\u0989\u099f',"logout()")}<p class="m" style="padding:0 18px">${navigator.onLine?'\ud83d\udfe2 \u0985\u09a8\u09b2\u09be\u0987\u09a8':'\ud83d\udd34 \u0985\u09ab\u09b2\u09be\u0987\u09a8'} \u00b7 v2.1</p></div>`}
+function dockH(){const s=me.role!='customer',n=(i,l,on,a,b)=>`<div class="nv ${on?'on':''}" onclick="${a}"><span>${i}${b?`<i class="bd">${bn(b)}</i>`:''}</span>${l}</div>`;
+return `<div class="dock"><div class="nav">${n('\ud83d\udcd2',s?'\u0996\u09be\u09a4\u09be':'\u09b9\u09cb\u09ae',!page,'go(null)')}${n('\ud83d\udcb0','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8',page=='tx',"go('tx')")}${n('\ud83d\udce2','\u09a8\u09cb\u099f\u09bf\u09b6',page=='nt',"go('nt')",inboxN())}${s?'':n('\ud83c\udf9f\ufe0f','\u09ad\u09be\u0989\u099a\u09be\u09b0',page=='vc',"go('vc')")}${n('\u2630','\u09ae\u09c7\u09a8\u09c1',0,'drawer=1;render()')}</div><div id="bn">${esc(tr('\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8: '+ADS[ai%ADS.length]))}</div></div>`}
+function theme(){const d=matchMedia('(prefers-color-scheme: dark)').matches,T={master:['#5b21b6','#8b5cf6','#6d28d9','#a78bfa'],admin:['#1d4ed8','#3b82f6','#2563eb','#60a5fa'],customer:['#0b6b41','#19a566','#0f7a4a','#37b57a']}[me?me.role:'customer'],s=document.documentElement.style;s.setProperty('--g1',T[0]);s.setProperty('--g2',T[1]);s.setProperty('--pri',T[d?3:2])}
+function render(){theme();const A=$('#app'),ov=$('#ov');
+if(me&&db){if(page=='nt'){unseenIds().forEach(x=>NEW.add(x));markSeen()}const nn=inboxN();document.title=(nn?'('+nn+') ':'')+'Tihan Khata';try{nn?(navigator.setAppBadge&&navigator.setAppBadge(nn)):(navigator.clearAppBadge&&navigator.clearAppBadge())}catch(e){}}
+if(!me){ov.className='';A.innerHTML=`<main><div style="text-align:right"><button class="g s" onclick="setLang()">\ud83c\udf10 ${lang=='bn'?'English':'\u09ac\u09be\u0982\u09b2\u09be'}</button></div><div class="logo"><div>\ud83d\udcd2</div><h2>Tihan Khata</h2><div class="m">\u0986\u09aa\u09a8\u09be\u09b0 \u09a1\u09bf\u099c\u09bf\u099f\u09be\u09b2 \u09b9\u09bf\u09b8\u09be\u09ac\u09c7\u09b0 \u0996\u09be\u09a4\u09be</div></div><div class="c"><label>\ud83d\udcf1 \u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0</label><input id="lp" type="tel" placeholder="01XXXXXXXXX"><label>\ud83d\udd12 \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1</label><div class="pw"><input id="lw" type="password" placeholder="\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09a6\u09bf\u09a8"><button type="button" class="eye" id="eye" onclick="togPw()">\ud83d\udc41\ufe0f</button></div><button style="width:100%;padding:12px" onclick="login()">\ud83d\udd10 \u09b2\u0997\u0987\u09a8 \u0995\u09b0\u09c1\u09a8</button><p id="le" class="due"></p></div></main>`;trDom(A);return}
+const h=page=='cust'?custH():page=='rep'?repPage():page?`<div class="ph"><button onclick="go(null)">\u2190</button><b>${TITLE[page]}</b></div><main>${P[page]()}</main>`:homeH();
+A.innerHTML=h+dockH();ov.className=sheet||drawer?'on':'';ov.innerHTML=sheet?sheetH():drawer?drawerH():'';trDom(A);trDom(ov)}
+const O={'\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 \u09a6\u09c7\u0996\u09c1\u09a8':'View transactions','\u09a8\u09a4\u09c1\u09a8 \u09a8\u09cb\u099f\u09bf\u09b6 \u098f\u09b8\u09c7\u099b\u09c7':'New notice received','\u09a8\u09a4\u09c1\u09a8':'New','\u0986\u09ae\u09bf':'Me','\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7':'Internet required','\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2 \u09aa\u09be\u0993\u09af\u09bc\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf':'Profile not found','\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u0995\u09ae\u09aa\u0995\u09cd\u09b7\u09c7 \u09ec \u0985\u0995\u09cd\u09b7\u09b0':'Password must be at least 6 characters','\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 (\u0995\u09ae\u09aa\u0995\u09cd\u09b7\u09c7 \u09ec \u0985\u0995\u09cd\u09b7\u09b0)':'Password (min 6 characters)','\u09a8\u09a4\u09c1\u09a8 \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 (\u09ac\u09a6\u09b2\u09be\u09a4\u09c7 \u099a\u09be\u0987\u09b2\u09c7 \u09b2\u09bf\u0996\u09c1\u09a8)':'New password (only to change)','\u09b8\u09bf\u0999\u09cd\u0995 \u09b9\u09af\u09bc\u09a8\u09bf \u098f\u09ae\u09a8 \u09a4\u09a5\u09cd\u09af \u09ae\u09c1\u099b\u09c7 \u09af\u09be\u09ac\u09c7\u0964 \u09b2\u0997\u0986\u0989\u099f \u0995\u09b0\u09ac\u09c7\u09a8?':'Unsynced data will be lost. Log out?','\u098f\u0995\u09ac\u09be\u09b0 \u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b8\u0982\u09af\u09cb\u0997 \u09a6\u09bf\u09af\u09bc\u09c7 \u0985\u09cd\u09af\u09be\u09aa \u0996\u09c1\u09b2\u09c1\u09a8\u0964':'Open the app once with internet.','\u09a4\u09be\u09b0\u09bf\u0996':'Date','\u09ac\u09be\u0995\u09bf \u09a8\u09bf\u09b2\u09be\u09ae':'Took on credit','\u099c\u09ae\u09be \u09a6\u09bf\u09b2\u09be\u09ae':'Paid','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8\u09c7\u09b0 \u09ac\u09bf\u09ac\u09b0\u09a3':'Transaction details','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 \u098f\u09a1\u09bf\u099f':'Edit transaction','\u09ae\u09cb\u099f':'Total','\u09b0\u09bf\u09aa\u09cb\u09b0\u09cd\u099f':'Report','\u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1':'Download','\u09a7\u09b0\u09a8':'Type','\u099f\u09be\u0995\u09be':'Amount','\u0986\u09aa\u09a8\u09be\u09b0 \u09a1\u09bf\u099c\u09bf\u099f\u09be\u09b2 \u09b9\u09bf\u09b8\u09be\u09ac\u09c7\u09b0 \u0996\u09be\u09a4\u09be':'Your digital ledger','\u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0 / \u0987\u0989\u099c\u09be\u09b0 \u0986\u0987\u09a1\u09bf':'Phone number / User ID','\u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0':'Phone number','\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09a6\u09bf\u09a8':'Enter password','\u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1':'Password','\u09b2\u0997\u0987\u09a8 \u0995\u09b0\u09c1\u09a8':'Log in','\u09a8\u09ae\u09cd\u09ac\u09b0 \u09ac\u09be \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09ad\u09c1\u09b2':'Wrong number or password','\u09a1\u09c7\u09ae\u09cb \u09b2\u0997\u0987\u09a8:':'Demo logins:','\u09ae\u09be\u09b8\u09cd\u099f\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8\u09c7\u09b0 \u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09a8\u09c7\u09b0 \u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09be\u09af\u09bc':'Waiting for Master Admin approval','\u09ae\u09be\u09b8\u09cd\u099f\u09be\u09b0 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8':'Master Admin','\u09ae\u09be\u09b8\u09cd\u099f\u09be\u09b0:':'Master:','\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8:':'Admin:','\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0:':'Customer:','\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8':'Admin','\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0':'Customers','\u09b8\u09ac \u09ac\u09cd\u09af\u09ac\u09b8\u09be':'All businesses','\u0987\u09a8\u09ac\u0995\u09cd\u09b8':'Inbox','\u09b8\u09be\u09aa\u09cb\u09b0\u09cd\u099f':'Support','\u0996\u09be\u09a4\u09be':'Ledger','\u09b9\u09cb\u09ae':'Home','\u09ae\u09c7\u09a8\u09c1':'Menu','\u0985\u09a8\u09b2\u09be\u0987\u09a8':'Online','\u0985\u09ab\u09b2\u09be\u0987\u09a8\u09c7 \u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4, \u0985\u09a8\u09b2\u09be\u0987\u09a8\u09c7 \u0997\u09c7\u09b2\u09c7 \u09b8\u09bf\u0999\u09cd\u0995 \u09b9\u09ac\u09c7':'Saved offline, will sync when online','\u0985\u09ab\u09b2\u09be\u0987\u09a8':'Offline','\u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09ae\u09be\u09a8 \u09b8\u09bf\u0999\u09cd\u0995':'Pending sync','\u0985\u09aa\u09c7\u0995\u09cd\u09b7\u09ae\u09be\u09a8':'Pending','\u09a8\u09a4\u09c1\u09a8 \u09ac\u09cd\u09af\u09ac\u09b8\u09be':'New business','\u09ac\u09cd\u09af\u09ac\u09b8\u09be \u09b8\u09ae\u09cd\u09aa\u09be\u09a6\u09a8\u09be':'Edit business','\u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09a8\u09be\u09ae':'Business name','\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8 / \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u09a8\u09ae\u09cd\u09ac\u09b0':'Helpline / contact number','\u09af\u09c7 \u09ac\u09cd\u09af\u09ac\u09b8\u09be \u09a6\u09c7\u0996\u09ac\u09c7':'Businesses to manage','\u09af\u09c7 \u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09c1\u0995\u09cd\u09a4':'Linked businesses','\u0993\u0987 \u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09b8\u09ac\u09be\u0987\u0995\u09c7':'Everyone in that business','\u09ac\u09cd\u09af\u09ac\u09b8\u09be:':'Business:','\u09ac\u09cd\u09af\u09ac\u09b8\u09be':'Business','\u09a4\u09a5\u09cd\u09af \u09b8\u09ae\u09cd\u09aa\u09be\u09a6\u09a8\u09be':'Edit info','\u09a8\u09a4\u09c1\u09a8 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8':'New admin','\u09a8\u09a4\u09c1\u09a8 \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0':'New customer','\u09b8\u09ac \u0998\u09b0 \u09aa\u09c2\u09b0\u09a3 \u0995\u09b0\u09c1\u09a8':'Fill in all fields','\u098f\u0987 \u09a8\u09ae\u09cd\u09ac\u09b0 \u0986\u0997\u09c7\u0987 \u0986\u099b\u09c7':'This number already exists','\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8':'Transactions','\u09ac\u09be\u0995\u09bf':'Due','\u099c\u09ae\u09be':'Paid','\u09ae\u09cb\u099f \u09aa\u09be\u09ac\u09cb':'Total to receive','\u09ae\u09cb\u099f \u09a6\u09c7\u09ac\u09cb':'Total to give','\u09ae\u09cb\u099f \u09a6\u09c7\u09a8\u09be':'Total due','\u09ae\u09cb\u099f \u099c\u09ae\u09be':'Total credit','\u09aa\u09be\u09ac\u09cb':'To receive','\u09a6\u09c7\u09ac\u09cb':'To give','\u09a6\u09c7\u09a8\u09be':'Due','\u09a6\u09bf\u09b2\u09be\u09ae/\u09ac\u09c7\u099a\u09be':'Gave/Sold','\u09aa\u09c7\u09b2\u09be\u09ae':'Received','\u09ac\u09bf\u09ac\u09b0\u09a3':'Details','\u09a8\u09bf\u09b6\u09cd\u099a\u09bf\u09a4':'Confirm','\u0996\u09cb\u0981\u099c':'Search','\u09b8\u09a0\u09bf\u0995 \u099f\u09be\u0995\u09be \u09a6\u09bf\u09a8':'Enter a valid amount','\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7':'Saved','\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09a3':'Save','\u09ac\u09be\u09a4\u09bf\u09b2':'Cancel','\u09a8\u09a4\u09c1\u09a8 \u09a8\u09cb\u099f\u09bf\u09b6':'New notice','\u0995\u09be\u0995\u09c7':'To whom','\u09a8\u09cb\u099f\u09bf\u09b6 \u09aa\u09cd\u09b0\u0995\u09be\u09b6\u09bf\u09a4':'Notice published','\u09a8\u09cb\u099f\u09bf\u09b6':'Notices','\u0995\u09cb\u09a8\u09cb \u09a8\u09cb\u099f\u09bf\u09b6 \u09a8\u09c7\u0987':'No notices','\u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a6\u09bf\u09a8':'Give voucher','\u09ad\u09be\u0989\u099a\u09be\u09b0\u09c7\u09b0 \u09ac\u09bf\u09ac\u09b0\u09a3 (\u09af\u09c7\u09ae\u09a8: \u09e7\u09e6% \u099b\u09be\u09a1\u09bc)':'Voucher details (e.g. 10% off)','\u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a6\u09c7\u0993\u09af\u09bc\u09be \u09b9\u09af\u09bc\u09c7\u099b\u09c7':'Voucher given','\u09ad\u09be\u0989\u099a\u09be\u09b0':'Vouchers','\u0995\u09cb\u09a8\u09cb \u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a8\u09c7\u0987':'No vouchers','\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?':'Delete this?','\u09ae\u09c1\u099b\u09c1\u09a8':'Delete','\u09a1\u09bf\u09b2\u09bf\u099f':'Delete','\u0995\u09bf\u099b\u09c1 \u09a8\u09c7\u0987':'Nothing here','\u09a8\u09ae\u09cd\u09ac\u09b0 \u09a8\u09c7\u0987':'No number','\u0995\u09cb\u09a8\u09cb \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8 \u09a8\u09c7\u0987':'No admins','\u0995\u09cb\u09a8\u09cb \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 \u09a8\u09c7\u0987':'No customers','\u09a8\u09bf\u09b0\u09cd\u09a7\u09be\u09b0\u09bf\u09a4 \u09a8\u09af\u09bc':'Not assigned','\u09a8\u09c7\u0987':'None','\u098f\u09a1\u09bf\u099f \u0995\u09b0\u09c1\u09a8':'Edit','\u098f\u09a1\u09bf\u099f':'Edit','\u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09bf\u09a4':'Approved','\u0985\u09a8\u09c1\u09ae\u09cb\u09a6\u09a8 \u09a6\u09bf\u09a8':'Approve','\u09b8\u09ac\u09be\u0987':'Everyone','\u09b9\u09c7\u09b2\u09cd\u09aa\u09b2\u09be\u0987\u09a8':'Helpline','\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2':'Profile','\u099b\u09ac\u09bf \u09aa\u09b0\u09bf\u09ac\u09b0\u09cd\u09a4\u09a8 \u0995\u09b0\u09c1\u09a8':'Change photo','\u09a8\u09be\u09ae, \u09a8\u09ae\u09cd\u09ac\u09b0 \u09ac\u09be \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09ac\u09a6\u09b2\u09be\u09a4\u09c7 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8\u09c7\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u0995\u09b0\u09c1\u09a8\u0964':'To change your name, number or password, contact your admin.','\u0986\u09ae\u09be\u09b0 \u09a4\u09a5\u09cd\u09af':'My info','\u09a8\u09be\u09ae':'Name','\u09b2\u0997\u0986\u0989\u099f':'Logout','\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8:':'Ad:','\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8':'Ad','\u09b8\u09c7\u0995\u09c7\u09a8\u09cd\u09a1':'seconds','\u09ac\u09a8\u09cd\u09a7 \u0995\u09b0\u09c1\u09a8':'Close','\u0986\u09aa\u09a8\u09be\u09b0 \u09ac\u09cd\u09af\u09ac\u09b8\u09be\u09b0 \u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8 \u098f\u0996\u09be\u09a8\u09c7 \u09a6\u09bf\u09a8':'Advertise your business here','\u09ae\u09cb\u09ac\u09be\u0987\u09b2 \u09b0\u09bf\u099a\u09be\u09b0\u09cd\u099c\u09c7 \u09ac\u09bf\u09b6\u09c7\u09b7 \u0985\u09ab\u09be\u09b0':'Special mobile recharge offer','\u09b8\u09c7\u09b0\u09be \u09a6\u09be\u09ae\u09c7 \u0995\u09c3\u09b7\u09bf \u09aa\u09a3\u09cd\u09af \u0995\u09bf\u09a8\u09c1\u09a8':'Buy farm produce at the best price','\u0985\u09ab\u09b2\u09be\u0987\u09a8 \u09a1\u09c7\u099f\u09be \u09b8\u09bf\u0999\u09cd\u0995 \u09b9\u09af\u09bc\u09c7\u099b\u09c7':'Offline data synced'};
+const D=Object.entries(O).sort((x,y)=>y[0].length-x[0].length);
+const tr=s=>{if(lang=='bn')return s;for(const[a,b]of D)s=s.split(a).join(b);return s};
+function trDom(r){if(lang=='bn')return;const w=document.createTreeWalker(r,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const v=tr(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}r.querySelectorAll('[placeholder]').forEach(e=>e.placeholder=tr(e.placeholder))}
+function setLang(){lang=lang=='bn'?'en':'bn';try{localStorage.setItem('tihan_lang',lang)}catch(e){}render()}
+function togPw(){const i=$('#lw'),h=i.type=='password';i.type=h?'text':'password';$('#eye').textContent=h?'\ud83d\ude48':'\ud83d\udc41\ufe0f'}
+async function login(){if(!navigator.onLine){$('#le').textContent=tr('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return}const p=nd($('#lp').value),w=$('#lw').value;if(!p||!w)return;$('#le').textContent='...';const{data,error}=await sb.auth.signInWithPassword({email:p+'@tihankhata.app',password:w});if(error){$('#le').textContent=tr('\u09a8\u09ae\u09cd\u09ac\u09b0 \u09ac\u09be \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09ad\u09c1\u09b2');return}await enter(data.user.id)}
+async function enter(id){UID=id;loadCache(id);if(navigator.onLine){try{await pull()}catch(e){}}
+me=db.users.find(u=>u.id==id);if(!me){toast(navigator.onLine?'\u09aa\u09cd\u09b0\u09cb\u09ab\u09be\u0987\u09b2 \u09aa\u09be\u0993\u09af\u09bc\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf':'\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');try{await sb.auth.signOut()}catch(e){}UID=null;db=null;render();return}
+page=null;cb='all';tb=null;q='';SEEN=null;initSeen();schedAd();render()}
+async function boot(){if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+$('#app').innerHTML='<main><div class="logo"><div>\ud83d\udcd2</div><h2>Tihan Khata</h2></div></main>';
+if(!sb){$('#app').innerHTML='<main><div class="c">\u098f\u0995\u09ac\u09be\u09b0 \u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b8\u0982\u09af\u09cb\u0997 \u09a6\u09bf\u09af\u09bc\u09c7 \u0985\u09cd\u09af\u09be\u09aa \u0996\u09c1\u09b2\u09c1\u09a8\u0964</div></main>';return}
+try{const{data:{session}}=await sb.auth.getSession();if(session){await enter(session.user.id);return}}catch(e){}
+render()}
+addEventListener('online',()=>syncNow(true));addEventListener('offline',()=>me&&idle()&&render());addEventListener('focus',()=>syncNow(false));setInterval(()=>syncNow(false),30000);
+let ADS=[''];let ADM=[{kind:'text'}];
+setInterval(()=>{ai++;const e=$('#bn');if(e)e.textContent=tr('\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8: '+ADS[ai%ADS.length])},5000);
+function schedAd(){nextAd=Date.now()+(60+Math.random()*120)*1000}
+function showAd(){const a=$('#ad');let s=5;a.style.display='flex';
+const draw=()=>{a.innerHTML=`<div>\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8</div><div>${ADS[ai%ADS.length]}</div>${s>0?`<div class="m" style="color:#cde">${bn(s)} \u09b8\u09c7\u0995\u09c7\u09a8\u09cd\u09a1...</div>`:'<button onclick="closeAd()">\u2715 \u09ac\u09a8\u09cd\u09a7 \u0995\u09b0\u09c1\u09a8</button>'}`;trDom(a)};
+draw();const iv=setInterval(()=>{s--;draw();if(s<=0)clearInterval(iv)},1000)}
+function closeAd(){$('#ad').style.display='none';schedAd()}
+setInterval(()=>{if(me&&me.role=='customer'&&Date.now()>nextAd&&$('#ad').style.display!='flex'&&$('#modal').style.display!='flex')showAd()},5000);
+async function logout(){if(hasDiff()&&navigator.onLine)await push();if(hasDiff()&&!confirm(tr('\u09b8\u09bf\u0999\u09cd\u0995 \u09b9\u09af\u09bc\u09a8\u09bf \u098f\u09ae\u09a8 \u09a4\u09a5\u09cd\u09af \u09ae\u09c1\u099b\u09c7 \u09af\u09be\u09ac\u09c7\u0964 \u09b2\u0997\u0986\u0989\u099f \u0995\u09b0\u09ac\u09c7\u09a8?')))return;try{localStorage.removeItem('tihan_c_'+UID)}catch(e){}try{await sb.auth.signOut()}catch(e){}me=null;db=null;UID=null;page=null;drawer=0;render()}
+boot();
+</script><script>
+/* Tihan Khata - ইউটিউব ও টিভি অ্যাড-অন. মূল <script> এর পরে লোড হবে */
+const VX={videos:[],channels:[],cur:null,tab:'v',unl:false,err:''};
+TITLE.vid='ইউটিউব';TITLE.tv='টিভি';
+
+/* ---------- ডেটা ---------- */
+async function vxLoad(){
+  if(!sb||!navigator.onLine)return;
+  try{
+    const[a,b]=await Promise.all([
+      sb.from('videos').select('*').order('created_at',{ascending:false}),
+      sb.from('channels').select('*').order('created_at',{ascending:true})]);
+    if(!a.error)VX.videos=a.data||[];
+    if(!b.error)VX.channels=b.data||[];
+    VX.err=(a.error||b.error||{}).message||'';
+  }catch(e){VX.err=String(e&&e.message||e)}
+  if(page=='vid'||page=='tv')render();
+}
+
+/* ---------- প্লেয়ার ---------- */
+function vxEmb(u){
+  u=String(u||'').trim();
+  const m=u.match(/(?:youtu\.be\/|[?&]v=|\/live\/|\/embed\/|\/shorts\/)([\w-]{11})/);
+  if(m)return{t:'f',s:'https://www.youtube.com/embed/'+m[1]+'?autoplay=1&playsinline=1&rel=0'};
+  if(/\.(mp4|webm|m3u8)(\?|#|$)/i.test(u))return{t:'v',s:u};
+  return{t:'f',s:u};
+}
+function vxPlayer(title,u){
+  const e=vxEmb(u);
+  return `<div class="c" style="padding:8px"><div style="position:relative;padding-top:56.25%;background:#000;border-radius:12px;overflow:hidden">${
+    e.t=='v'
+    ?`<video id="vxv" data-src="${esc(e.s)}" controls autoplay playsinline style="position:absolute;inset:0;width:100%;height:100%"></video>`
+    :`<iframe src="${esc(e.s)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>`
+  }</div><div style="padding:8px 4px 2px"><b>${esc(title)}</b></div></div>`;
+}
+function vxHls(){
+  const v=document.getElementById('vxv');
+  if(!v||v.dataset.done)return;
+  v.dataset.done=1;
+  const s=v.dataset.src;
+  if(/\.m3u8/i.test(s)&&!v.canPlayType('application/vnd.apple.mpegurl')){
+    const go2=()=>{try{const h=new Hls();h.loadSource(s);h.attachMedia(v)}catch(e){}};
+    if(window.Hls)go2();
+    else{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.min.js';sc.onload=go2;document.head.appendChild(sc)}
+  }else v.src=s;
+}
+function vxPlay(id){
+  const x=VX.videos.find(z=>z.id==id)||VX.channels.find(z=>z.id==id);
+  VX.cur=x?{id,t:x.title||x.name||'',u:x.url}:null;
+  render();scrollTo(0,0);
+}
+
+/* ---------- লক (এই ফোনে, পাসওয়ার্ড দিয়ে) ---------- */
+const lkKey=()=>'tihan_lock_'+UID;
+const lkGet=()=>{try{return localStorage.getItem(lkKey())}catch(e){return null}};
+async function sha(s){
+  try{const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('tk:'+s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+  catch(e){let h=0;for(const c of 'tk:'+s)h=(h*31+c.charCodeAt(0))|0;return'x'+h}
+}
+function vxSetLock(){
+  modal('🔐 লক পাসওয়ার্ড দিন',[{k:'p',l:'নতুন পাসওয়ার্ড (কমপক্ষে ৪ অক্ষর)',t:'password',v:''}],async r=>{
+    if((r.p||'').length<4){toast('কমপক্ষে ৪ অক্ষর দিন');return false}
+    try{localStorage.setItem(lkKey(),await sha(r.p))}catch(e){toast('লক সেট করা যায়নি');return false}
+    VX.unl=false;VX.cur=null;render();toast('লক করা হয়েছে');
+  });
+}
+async function vxUnlock(){
+  const v=($('#lkp')||{}).value||'';
+  if(!v)return;
+  if(await sha(v)===lkGet()){VX.unl=true;render()}else toast('পাসওয়ার্ড ভুল');
+}
+function vxLockNow(){VX.unl=false;VX.cur=null;render()}
+function vxLockOff(){
+  if(!confirm('লক তুলে দেবেন?'))return;
+  try{localStorage.removeItem(lkKey())}catch(e){}
+  VX.unl=false;render();
+}
+async function vxForgot(){
+  const p=prompt('লক ভুলে গেছেন? আপনার লগইন পাসওয়ার্ড দিন');
+  if(!p)return;
+  const{error}=await sb.auth.signInWithPassword({email:nd(me.phone)+'@tihankhata.app',password:p});
+  if(error){toast('পাসওয়ার্ড ভুল');return}
+  try{localStorage.removeItem(lkKey())}catch(e){}
+  VX.unl=false;render();toast('লক সরানো হয়েছে');
+}
+
+/* ---------- পেজ ---------- */
+const vxPub=()=>VX.videos.filter(v=>!v.private&&(me.role=='master'||(v.to_user?v.to_user==me.id:(me.biz||[]).includes(v.business_id))));
+const vxPriv=()=>VX.videos.filter(v=>v.private&&(me.role=='master'||v.to_user==me.id));
+const vxErr=()=>VX.err?`<div class="c due">${esc(VX.err)}</div>`:'';
+
+function vxItem(v,M){
+  return `<div class="c"><div class="row sp"><b>${v.private?'🔒 ':'▶️ '}${esc(v.title||'ভিডিও')}</b>${M?`<button class="s r" onclick="vxDel('videos','${v.id}')">🗑️</button>`:''}</div>${v.body?`<div style="margin:6px 0">${esc(v.body)}</div>`:''}${v.url?`<button class="s" onclick="vxPlay('${v.id}')">▶️ দেখুন</button>`:''}<div class="m">${esc(B(v.business_id).name)} · ${v.to_user?esc(U(v.to_user).name):'সবাই'} · ${fts(v.created_at)}</div></div>`;
+}
+
+P.vid=()=>{
+  const M=me.role=='master',cu=me.role=='customer';
+  const tabs=`<div class="row" style="gap:6px;margin-bottom:10px"><button class="s ${VX.tab=='v'?'':'g'}" onclick="VX.tab='v';VX.cur=null;render()">▶️ ভিডিও</button><button class="s ${VX.tab=='p'?'':'g'}" onclick="VX.tab='p';VX.cur=null;render()">🔒 ব্যক্তিগত</button></div>`;
+  const player=VX.cur?vxPlayer(VX.cur.t,VX.cur.u):'';
+  if(VX.tab=='v'){
+    return tabs+player+(M?'<button onclick="vxSend(false)">➕ ভিডিও পাঠান</button><br><br>':'')+vxErr()
+      +(vxPub().map(v=>vxItem(v,M)).join('')||'<p class="m">কোনো ভিডিও নেই</p>');
+  }
+  /* ব্যক্তিগত ট্যাব */
+  if(M){
+    return tabs+player+'<button onclick="vxSend(true)">➕ ব্যক্তিগত বার্তা/ভিডিও পাঠান</button><br><br>'+vxErr()
+      +(vxPriv().map(v=>vxItem(v,true)).join('')||'<p class="m">কিছু নেই</p>');
+  }
+  const lk=lkGet();
+  if(lk&&!VX.unl){
+    return tabs+`<div class="c" style="text-align:center"><div style="font-size:42px">🔒</div><p class="m">এই ট্যাব লক করা আছে</p><input id="lkp" type="password" placeholder="পাসওয়ার্ড" onkeydown="if(event.key=='Enter')vxUnlock()"><button class="big" onclick="vxUnlock()">খুলুন</button><p><a href="#" class="m" onclick="vxForgot();return false">পাসওয়ার্ড ভুলে গেছি</a></p></div>`;
+  }
+  return tabs+player+`<div class="row" style="margin-bottom:10px">${lk?`<button class="s g" onclick="vxLockNow()">🔒 এখনই লক করুন</button><button class="s g" onclick="vxLockOff()">🔓 লক তুলে দিন</button>`:`<button class="s g" onclick="vxSetLock()">🔐 পাসওয়ার্ড দিয়ে লক করুন</button>`}</div>`+vxErr()
+    +(vxPriv().map(v=>vxItem(v,false)).join('')||'<p class="m">কোনো ব্যক্তিগত বার্তা নেই</p>');
+};
+
+P.tv=()=>{
+  const M=me.role=='master';
+  return (VX.cur?vxPlayer(VX.cur.t,VX.cur.u):'')
+    +(M?'<button onclick="vxAddChan()">➕ নতুন টিভি লিংক</button><br><br>':'')+vxErr()
+    +(VX.channels.map(c=>`<div class="c"><div class="row sp"><b style="cursor:pointer;flex:1" onclick="vxPlay('${c.id}')">📺 ${esc(c.name)}</b>${M?`<button class="s r" onclick="vxDel('channels','${c.id}')">🗑️</button>`:''}</div></div>`).join('')||'<p class="m">কোনো টিভি লিংক নেই</p>');
+};
+
+/* ---------- মাস্টার: পাঠানো ---------- */
+function vxSend(priv){
+  const cs=allC();
+  modal(priv?'ব্যক্তিগত বার্তা/ভিডিও':'ভিডিও পাঠান',[
+    ...(priv?[]:[{k:'biz',l:'ব্যবসা (কাস্টমার না বাছলে এই ব্যবসার সবাই পাবে)',o:[['all','সব ব্যবসা'],...db.biz.map(b=>[b.id,b.name])]}]),
+    {k:'to',l:priv?'কাকে (এক বা একাধিক)':'নির্দিষ্ট কাস্টমার (ঐচ্ছিক, এক বা একাধিক)',c:cs.map(c=>[c.id,c.name]),v:[]},
+    {k:'title',l:'শিরোনাম'},
+    ...(priv?[{k:'body',l:'বার্তা',t:'area'}]:[]),
+    {k:'url',l:priv?'ইউটিউব লিংক (ঐচ্ছিক)':'ইউটিউব লিংক',t:'url'}],
+  async r=>{
+    const title=r.title.trim(),url=(r.url||'').trim(),body=(r.body||'').trim();
+    if(!title||(priv?(!url&&!body):!url)){toast('সব ঘর পূরণ করুন');return false}
+    let rows=[];
+    if(r.to.length){
+      r.to.forEach(cid=>{
+        const bs=U(cid).biz||[],bz=bs.includes(r.biz)?r.biz:bs[0];
+        if(bz)rows.push({business_id:bz,to_user:cid});
+      });
+    }else if(!priv){
+      (r.biz=='all'?db.biz.map(b=>b.id):[r.biz]).forEach(bz=>rows.push({business_id:bz,to_user:null}));
+    }else{toast('কাস্টমার বাছুন');return false}
+    if(!rows.length){toast('কোনো প্রাপক পাওয়া যায়নি');return false}
+    rows=rows.map(x=>({id:uid(),...x,title,url:url||null,body:body||null,private:!!priv}));
+    const{error}=await sb.from('videos').insert(rows);
+    if(error){alert(error.message);return false}
+    toast('পাঠানো হয়েছে ('+bn(rows.length)+')');vxLoad();
+  });
+}
+function vxAddChan(){
+  modal('নতুন টিভি লিংক',[
+    {k:'name',l:'নাম'},
+    {k:'url',l:'ইউটিউব লিংক (লাইভ বা ভিডিও)',t:'url'}],
+  async r=>{
+    if(!r.name.trim()||!r.url.trim()){toast('সব ঘর পূরণ করুন');return false}
+    const{error}=await sb.from('channels').insert({id:uid(),name:r.name.trim(),url:r.url.trim()});
+    if(error){alert(error.message);return false}
+    toast('সংরক্ষিত হয়েছে');vxLoad();
+  });
+}
+async function vxDel(t,id){
+  if(!confirm(tr('মুছে ফেলবেন?')))return;
+  const{error}=await sb.from(t).delete().eq('id',id);
+  if(error){alert(error.message);return}
+  if(VX.cur&&VX.cur.id==id)VX.cur=null;
+  vxLoad();
+}
+
+/* ---------- হোম গ্রিডে আইকন ---------- */
+const _gridH=gridH;
+gridH=function(){
+  return _gridH().replace(/<\/div>$/,
+    `<div class="gi" onclick="go('tv')"><span class="gc c3">📺</span>টিভি</div><div class="gi" onclick="go('vid')"><span class="gc c1">▶️</span>ইউটিউব</div></div>`);
+};
+const _go=go;
+go=function(p,c){
+  if(page!=p||p==null){VX.cur=null;VX.unl=false}
+  if(p=='vid'&&page!='vid')VX.tab='v';
+  _go(p,c);
+  if(p=='vid'||p=='tv')vxLoad();
+};
+const _render=render;
+render=function(){_render();vxHls()};
+
+
+/* ---------- ads (text / image / video) ---------- */
+const AX={list:[]};
+TITLE.ads='\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8';
+function adSet(){
+  const L=AX.list;
+  ADS=L.length?L.map(a=>a.body||'\ud83d\udce2'):[''];
+  ADM=L.length?L.map(a=>({kind:a.kind||'text',media:a.media})):[{kind:'text'}];
+  const b=$('#bn');if(b)b.style.display=L.length?'':'none';
+}
+const _dockH=dockH;
+dockH=function(){const h=_dockH();return AX.list.length?h:h.replace('<div id="bn">','<div id="bn" style="display:none">')};
+async function adLoad(){
+  if(!sb||!navigator.onLine||!me)return;
+  try{
+    const{data,error}=await sb.from('ads').select('*').order('created_at',{ascending:true});
+    if(error)return;
+    AX.list=data||[];adSet();
+    if(page=='ads'&&idle())render();
+  }catch(e){}
+}
+function adMedia(i){
+  const m=ADM[i];
+  if(!m||!m.media)return '';
+  if(m.kind=='image')return '<img src="'+esc(m.media)+'" style="max-width:90%;max-height:45vh;border-radius:14px" alt="">';
+  if(m.kind=='video'){
+    const e=vxEmb(m.media);
+    return '<div style="width:90%;max-width:480px;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden">'+(e.t=='v'
+      ?'<video src="'+esc(e.s)+'" controls autoplay muted playsinline style="width:100%;height:100%"></video>'
+      :'<iframe src="'+esc(e.s)+'" allow="autoplay; encrypted-media; fullscreen" allowfullscreen style="width:100%;height:100%;border:0"></iframe>')+'</div>';
+  }
+  return '';
+}
+showAd=function(){
+  if(!AX.list.length){schedAd();return}
+  const a=$('#ad'),i=ai%ADS.length;let s=5;
+  a.style.display='flex';
+  a.innerHTML='<div>'+tr('\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8')+'</div><div>'+esc(ADS[i])+'</div>'+adMedia(i)+'<div id="adc" class="m" style="color:#cde"></div>';
+  const upd=()=>{const c=$('#adc');if(!c)return;if(s>0)c.textContent=bn(s)+' '+tr('\u09b8\u09c7\u0995\u09c7\u09a8\u09cd\u09a1')+'...';else c.innerHTML='<button onclick="closeAd()">\u2715 '+tr('\u09ac\u09a8\u09cd\u09a7 \u0995\u09b0\u09c1\u09a8')+'</button>'};
+  upd();
+  const iv=setInterval(()=>{s--;upd();if(s<=0)clearInterval(iv)},1000);
+  trDom(a);
+};
+closeAd=function(){const a=$('#ad');a.style.display='none';a.innerHTML='';schedAd()};
+function adImg(f){
+  return new Promise((ok,no)=>{
+    const r=new FileReader();
+    r.onload=()=>{const im=new Image();
+      im.onload=()=>{const M=640,k=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement('canvas');
+        c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.75))};
+      im.onerror=()=>no(new Error('image'));im.src=r.result};
+    r.onerror=()=>no(new Error('read'));r.readAsDataURL(f);
+  });
+}
+P.ads=()=>{
+  if(me.role!='master')return '';
+  const card=a=>{
+    const pv=a.kind=='image'&&a.media?'<img src="'+esc(a.media)+'" style="max-width:100%;max-height:140px;border-radius:10px;margin:6px 0" alt="">':a.kind=='video'?'<div class="m">\u25b6\ufe0f '+esc(a.media||'')+'</div>':'';
+    return '<div class="c"><div class="row sp"><b>'+(a.kind=='image'?'\ud83d\uddbc\ufe0f \u099b\u09ac\u09bf':a.kind=='video'?'\u25b6\ufe0f \u09ad\u09bf\u09a1\u09bf\u0993':'\ud83d\udcdd \u09b2\u09c7\u0996\u09be')+'</b><span><button class="s g" onclick="adForm(\''+a.id+'\')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</button> <button class="s r" onclick="adDel(\''+a.id+'\')">\ud83d\uddd1\ufe0f</button></span></div>'+pv+'<div>'+esc(a.body||'')+'</div><div class="m">'+fts(a.created_at)+'</div></div>';
+  };
+  return '<button onclick="adForm()">\u2795 \u09a8\u09a4\u09c1\u09a8 \u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8</button><br><br>'
+    +(AX.list.slice().reverse().map(card).join('')||'<p class="m">\u09a8\u09bf\u099c\u09c7\u09b0 \u0995\u09cb\u09a8\u09cb \u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8 \u09a8\u09c7\u0987</p>');
+};
+function adForm(id){
+  const a=AX.list.find(x=>x.id==id)||{kind:'text',body:'',media:''};
+  modal(id?'\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8 \u098f\u09a1\u09bf\u099f':'\u09a8\u09a4\u09c1\u09a8 \u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8',[
+    {k:'kind',l:'\u09a7\u09b0\u09a8',o:[['text','\ud83d\udcdd \u09b6\u09c1\u09a7\u09c1 \u09b2\u09c7\u0996\u09be'],['image','\ud83d\uddbc\ufe0f \u099b\u09ac\u09bf'],['video','\u25b6\ufe0f \u09ad\u09bf\u09a1\u09bf\u0993 \u09b2\u09bf\u0982\u0995']],v:a.kind},
+    {k:'t',l:'\u09b2\u09c7\u0996\u09be (\u099b\u09cb\u099f \u0995\u09b0\u09c7)',t:'area',v:a.body==='\ud83d\udce2'?'':a.body},
+    {k:'img',l:'\u099b\u09ac\u09bf \u09ac\u09be\u099b\u09c1\u09a8 (\u09a7\u09b0\u09a8 \u099b\u09ac\u09bf \u09b9\u09b2\u09c7)',t:'file'},
+    {k:'vu',l:'\u09ad\u09bf\u09a1\u09bf\u0993 \u09b2\u09bf\u0982\u0995 (\u09a7\u09b0\u09a8 \u09ad\u09bf\u09a1\u09bf\u0993 \u09b9\u09b2\u09c7)',t:'url',v:a.kind=='video'?a.media:''}],
+  async r=>{
+    const kind=r.kind,t=(r.t||'').trim();let media=null;
+    if(kind=='image'){
+      const f=document.getElementById('f_img').files[0];
+      if(f){try{media=await adImg(f)}catch(e){toast('\u099b\u09ac\u09bf \u09aa\u09a1\u09bc\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf');return false}}
+      else if(a.kind=='image'&&a.media)media=a.media;
+      else{toast('\u099b\u09ac\u09bf \u09ac\u09be\u099b\u09c1\u09a8');return false}
+    }else if(kind=='video'){
+      media=(r.vu||'').trim();
+      if(!media){toast('\u09ad\u09bf\u09a1\u09bf\u0993 \u09b2\u09bf\u0982\u0995 \u09a6\u09bf\u09a8');return false}
+    }else if(!t){toast('\u09b2\u09c7\u0996\u09be \u09a6\u09bf\u09a8');return false}
+    if(!navigator.onLine){toast('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return false}
+    const row={kind,body:t||'\ud83d\udce2',media};
+    const res=id?await sb.from('ads').update(row).eq('id',id):await sb.from('ads').insert({id:uid(),...row});
+    if(res.error){alert(res.error.message);return false}
+    toast('\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');adLoad();
+  });
+}
+async function adDel(id){
+  if(!confirm(tr('\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?')))return;
+  const{error}=await sb.from('ads').delete().eq('id',id);
+  if(error){alert(error.message);return}
+  adLoad();
+}
+const _enter=enter;
+enter=async function(id){await _enter(id);adLoad()};
+setInterval(()=>adLoad(),300000);
+const _gridH2=gridH;
+gridH=function(){
+  const h=_gridH2();
+  return me&&me.role=='master'?h.replace(/<\/div>$/,'<div class="gi" onclick="go(\'ads\')"><span class="gc c2">\ud83d\udce2</span>\u09ac\u09bf\u099c\u09cd\u099e\u09be\u09aa\u09a8</div></div>'):h;
+};
+
+/* ---------- video / tv edit ---------- */
+const _vxItem=vxItem;
+vxItem=function(v,M){
+  let h=_vxItem(v,M);
+  if(M)h=h.replace('<button class="s r" onclick="vxDel(\'videos\'','<button class="s g" style="margin-left:auto;margin-right:6px" onclick="vxEdit(\''+v.id+'\')">\u270f\ufe0f</button><button class="s r" onclick="vxDel(\'videos\'');
+  return h;
+};
+const _ptv=P.tv;
+P.tv=()=>_ptv().replace(/<button class="s r" onclick="vxDel\('channels','([^']+)'\)">/g,(m,id)=>'<button class="s g" style="margin-left:auto;margin-right:6px" onclick="vxChan(\''+id+'\')">\u270f\ufe0f</button>'+m);
+function vxEdit(id){
+  const v=VX.videos.find(x=>x.id==id);if(!v)return;
+  modal('\u098f\u09a1\u09bf\u099f',[
+    {k:'title',l:'\u09b6\u09bf\u09b0\u09cb\u09a8\u09be\u09ae',v:v.title},
+    ...(v.private?[{k:'body',l:'\u09ac\u09be\u09b0\u09cd\u09a4\u09be',t:'area',v:v.body}]:[]),
+    {k:'url',l:'\u0987\u0989\u099f\u09bf\u0989\u09ac \u09b2\u09bf\u0982\u0995',t:'url',v:v.url}],
+  async r=>{
+    const title=(r.title||'').trim(),url=(r.url||'').trim(),body=(r.body||'').trim();
+    if(!title||(v.private?(!url&&!body):!url)){toast('\u09b8\u09ac \u0998\u09b0 \u09aa\u09c2\u09b0\u09a3 \u0995\u09b0\u09c1\u09a8');return false}
+    const row={title,url:url||null};if(v.private)row.body=body||null;
+    const{error}=await sb.from('videos').update(row).eq('id',id);
+    if(error){alert(error.message);return false}
+    toast('\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');vxLoad();
+  });
+}
+function vxChan(id){
+  const c=VX.channels.find(x=>x.id==id);if(!c)return;
+  modal('\u098f\u09a1\u09bf\u099f',[{k:'name',l:'\u09a8\u09be\u09ae',v:c.name},{k:'url',l:'\u0987\u0989\u099f\u09bf\u0989\u09ac \u09b2\u09bf\u0982\u0995 (\u09b2\u09be\u0987\u09ad \u09ac\u09be \u09ad\u09bf\u09a1\u09bf\u0993)',t:'url',v:c.url}],
+  async r=>{
+    if(!r.name.trim()||!r.url.trim()){toast('\u09b8\u09ac \u0998\u09b0 \u09aa\u09c2\u09b0\u09a3 \u0995\u09b0\u09c1\u09a8');return false}
+    const{error}=await sb.from('channels').update({name:r.name.trim(),url:r.url.trim()}).eq('id',id);
+    if(error){alert(error.message);return false}
+    toast('\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');vxLoad();
+  });
+}
+
+/* ---------- profile photo for everyone ---------- */
+photo=function(inp){
+  const f=inp.files[0];if(!f)return;
+  if(!navigator.onLine){toast('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return}
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();
+    im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=160;
+      const x=c.getContext('2d'),s=Math.min(im.width,im.height);
+      x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);
+      const ph=c.toDataURL('image/jpeg',.75);
+      sb.from('profiles').update({photo:ph}).eq('id',me.id).then(res=>{
+        if(res.error){toast(res.error.message);return}
+        me.photo=ph;const u=db.users.find(z=>z.id==me.id);if(u)u.photo=ph;
+        persist();render();toast('\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');
+      });
+    };
+    im.src=r.result};
+  r.readAsDataURL(f);
+};
+P.pf=()=>{
+  const cu=me.role=='customer';
+  return '<div class="c" style="text-align:center">'+av(me,90)+'<br><br>'
+    +'<button onclick="document.getElementById(\'pfi\').click()">\ud83d\udcf7 \u099b\u09ac\u09bf \u09aa\u09b0\u09bf\u09ac\u09b0\u09cd\u09a4\u09a8 \u0995\u09b0\u09c1\u09a8</button>'
+    +'<input id="pfi" type="file" accept="image/*" style="display:none" onchange="photo(this)">'
+    +'<h3>'+esc(me.name)+'</h3><div class="m">\ud83d\udcf1 '+esc(me.phone)+'</div>'
+    +(cu?'<p class="m">\u09a8\u09be\u09ae, \u09a8\u09ae\u09cd\u09ac\u09b0 \u09ac\u09be \u09aa\u09be\u09b8\u0993\u09af\u09bc\u09be\u09b0\u09cd\u09a1 \u09ac\u09a6\u09b2\u09be\u09a4\u09c7 \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8\u09c7\u09b0 \u09b8\u09be\u09a5\u09c7 \u09af\u09cb\u0997\u09be\u09af\u09cb\u0997 \u0995\u09b0\u09c1\u09a8\u0964</p>'
+        :'<br><button class="g" onclick="userForm(\''+me.id+'\')">\u270f\ufe0f \u0986\u09ae\u09be\u09b0 \u09a4\u09a5\u09cd\u09af \u098f\u09a1\u09bf\u099f \u0995\u09b0\u09c1\u09a8</button>')
+    +'</div>';
+};
+
+/* ---------- vouchers: image + design + add/edit/delete ---------- */
+(function(){const s=document.createElement('style');s.textContent=`
+.vch{position:relative;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;border-radius:18px;padding:16px 20px;margin-bottom:16px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.vch::before,.vch::after{content:"";position:absolute;top:56%;width:24px;height:24px;border-radius:50%;background:var(--bg);transform:translateY(-50%)}
+.vch::before{left:-12px}.vch::after{right:-12px}
+.vch .vt{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;opacity:.95;font-weight:600}
+.vch .vb{font-size:22px;font-weight:700;margin:8px 0 12px;line-height:1.35;word-break:break-word}
+.vch img{width:100%;max-height:280px;object-fit:cover;border-radius:12px;margin:8px 0}
+.vch .vd{border-top:2px dashed rgba(255,255,255,.6);padding-top:9px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.vch button.s{background:rgba(255,255,255,.25);color:#fff;border:0}
+`;document.head.appendChild(s)})();
+function vcCard(v,adm){
+  const hasT=v.text&&v.text!=='\ud83c\udf9f\ufe0f';
+  return '<div class="vch"><div class="vt"><span>\ud83c\udf9f\ufe0f '+esc(B(v.biz).name)+'</span>'+(adm?'<span>'+esc(U(v.cust).name)+'</span>':'')+'</div>'
+    +(v.media?'<img src="'+esc(v.media)+'" alt="">':'')
+    +(hasT?'<div class="vb">'+esc(v.text)+'</div>':'')
+    +'<div class="vd"><span>'+esc(v.date||'')+'</span>'+(adm?'<span><button class="s" onclick="vcEdit(\''+v.id+'\')">\u270f\ufe0f \u098f\u09a1\u09bf\u099f</button> <button class="s" onclick="vcDel(\''+v.id+'\')">\ud83d\uddd1\ufe0f</button></span>':'<span>\u09ad\u09be\u0989\u099a\u09be\u09b0</span>')+'</div></div>';
+}
+P.vc=()=>{
+  if(me.role=='customer'){
+    return db.vouchers.filter(v=>v.cust==me.id).slice().reverse().map(v=>vcCard(v,false)).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a8\u09c7\u0987</p>';
+  }
+  const list=db.vouchers.filter(v=>myBiz().includes(v.biz)).slice().reverse();
+  return '<button onclick="vcFormX()">\u2795 \u09a8\u09a4\u09c1\u09a8 \u09ad\u09be\u0989\u099a\u09be\u09b0</button><br><br>'+(list.map(v=>vcCard(v,true)).join('')||'<p class="m">\u0995\u09cb\u09a8\u09cb \u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a8\u09c7\u0987</p>');
+};
+function vcFormX(id,cid){
+  const v=id?db.vouchers.find(x=>x.id==id):null;
+  if(id&&!v)return;
+  const cs=allC();
+  if(!id&&!cs.length){toast('\u0995\u09cb\u09a8\u09cb \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 \u09a8\u09c7\u0987');return}
+  const f=[];
+  if(!id){
+    f.push({k:'cust',l:'\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0',o:cs.map(c=>[c.id,c.name]),v:cid||cs[0].id});
+    f.push({k:'biz',l:'\u09ac\u09cd\u09af\u09ac\u09b8\u09be',o:bizOpts()});
+  }
+  f.push({k:'text',l:'\u09ad\u09be\u0989\u099a\u09be\u09b0\u09c7\u09b0 \u09b2\u09c7\u0996\u09be (\u09af\u09c7\u09ae\u09a8: \u09e7\u09e6% \u099b\u09be\u09a1\u09bc)',t:'area',v:v&&v.text!=='\ud83c\udf9f\ufe0f'?v.text:''});
+  f.push({k:'img',l:'\u099b\u09ac\u09bf (\u0990\u099a\u09cd\u099b\u09bf\u0995)',t:'file'});
+  if(v&&v.media)f.push({k:'rm',l:'',c:[['1','\u09ac\u09b0\u09cd\u09a4\u09ae\u09be\u09a8 \u099b\u09ac\u09bf \u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09c1\u09a8']],v:[]});
+  modal(id?'\u09ad\u09be\u0989\u099a\u09be\u09b0 \u098f\u09a1\u09bf\u099f':'\u09ad\u09be\u0989\u099a\u09be\u09b0 \u09a6\u09bf\u09a8',f,async r=>{
+    const t=(r.text||'').trim();let media=v?v.media||'':'';
+    const file=document.getElementById('f_img').files[0];
+    if(file){try{media=await adImg(file)}catch(e){toast('\u099b\u09ac\u09bf \u09aa\u09a1\u09bc\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf');return false}}
+    else if(r.rm&&r.rm.length)media='';
+    if(!t&&!media){toast('\u09b2\u09c7\u0996\u09be \u09ac\u09be \u099b\u09ac\u09bf \u09a6\u09bf\u09a8');return false}
+    if(v){v.text=t||'\ud83c\udf9f\ufe0f';v.media=media}
+    else{
+      const c=U(r.cust),b=(c.biz||[]).includes(r.biz)?r.biz:((c.biz||[]).find(x=>myBiz().includes(x))||r.biz);
+      db.vouchers.push({id:uid(),cust:r.cust,biz:b,text:t||'\ud83c\udf9f\ufe0f',media,date:today()});
+    }
+    save();render();toast('\u09b8\u0982\u09b0\u0995\u09cd\u09b7\u09bf\u09a4 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');
+  });
+}
+function vcEdit(id){vcFormX(id)}
+vcForm=function(cid){vcFormX(null,cid)};
+function vcDel(id){
+  if(!confirm(tr('\u09ae\u09c1\u099b\u09c7 \u09ab\u09c7\u09b2\u09ac\u09c7\u09a8?')))return;
+  db.vouchers=db.vouchers.filter(x=>x.id!=id);save();render();
+}
+
+/* ---------- robust image reader ---------- */
+adImg=function(f,M0,q0){
+  return new Promise((ok,no)=>{
+    const u=URL.createObjectURL(f),im=new Image();
+    const t=setTimeout(()=>{no(new Error('timeout'))},20000);
+    im.onload=()=>{clearTimeout(t);try{
+      const M=M0||640,k=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement('canvas');
+      c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+      ok(c.toDataURL('image/jpeg',q0||.75))}catch(e){no(e)}};
+    im.onerror=()=>{clearTimeout(t);URL.revokeObjectURL(u);no(new Error('image'))};
+    im.src=u;
+  });
+};
+
+/* ---------- search (name / phone / history) ---------- */
+TITLE.sr='\u09b8\u09be\u09b0\u09cd\u099a';
+let SRQ='';
+const SRI='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>';
+function srList(q){
+  const k=nd(q).toLowerCase().trim();
+  if(!k)return '<p class="m">\u09a8\u09be\u09ae \u09ac\u09be \u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0 \u09b2\u09bf\u0996\u09c1\u09a8\u0964 \u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0 \u09ac\u09be \u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8\u09c7\u09b0 \u09a4\u09a5\u09cd\u09af \u0993 \u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 \u098f\u0996\u09be\u09a8\u09c7 \u09aa\u09be\u09ac\u09c7\u09a8\u0964</p>';
+  const pool=db.users.filter(u=>u.role=='customer'?allC().some(c=>c.id==u.id):(me.role=='master'&&u.role!='master'));
+  const hit=pool.filter(u=>(nd(u.name).toLowerCase()+' '+nd(u.phone)).includes(k));
+  const ids=new Set(hit.map(u=>u.id));
+  let tx=visTx().filter(t=>ids.has(t.cust)||(t.note&&nd(t.note).toLowerCase().includes(k))||String(t.amt)==k);
+  tx=tx.slice().sort((a,b)=>(a.iso||'').localeCompare(b.iso||'')).slice(-20);
+  const rl={admin:'\u0985\u09cd\u09af\u09be\u09a1\u09ae\u09bf\u09a8',customer:'\u0995\u09be\u09b8\u09cd\u099f\u09ae\u09be\u09b0'};
+  const cards=hit.map(u=>'<div class="li" onclick="'+(u.role=='customer'?"go(\'cust\',\'"+u.id+"\')":"userForm(\'"+u.id+"\')")+'">'+av(u)+'<div><b>'+esc(u.name)+'</b> <span class="tag">'+rl[u.role]+'</span><div class="m">'+esc(u.phone)+'</div></div><div>'+(u.role=='customer'?money(balS(u.id)):'')+'</div></div>').join('');
+  return (cards||'<p class="m">\u0995\u09cb\u09a8\u09cb \u09ac\u09cd\u09af\u0995\u09cd\u09a4\u09bf \u09aa\u09be\u0993\u09af\u09bc\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf</p>')
+    +(tx.length?'<div class="m" style="margin:12px 2px 6px">\u09b2\u09c7\u09a8\u09a6\u09c7\u09a8 ('+bn(tx.length)+')</div>'+txRows(tx,0):'');
+}
+function srQ(v){SRQ=v;const e=$('#srr');if(e)e.innerHTML=srList(v)}
+P.sr=()=>me.role=='customer'?'':'<div class="srch">\ud83d\udd0d<input id="sq" placeholder="\u09a8\u09be\u09ae \u09ac\u09be \u09ab\u09cb\u09a8 \u09a8\u09ae\u09cd\u09ac\u09b0 \u09b2\u09bf\u0996\u09c1\u09a8" value="'+esc(SRQ)+'" oninput="srQ(this.value)"></div><div id="srr">'+srList(SRQ)+'</div>';
+const _homeH2=homeH;
+homeH=function(){
+  let h=_homeH2();
+  if(me.role!='customer')h=h.replace('<div class="ib" onclick="go(\'help\')">','<div class="ib" onclick="go(\'sr\')">'+SRI+'\u09b8\u09be\u09b0\u09cd\u099a</div><div class="ib" onclick="go(\'help\')">');
+  return h;
+};
+const _go3=go;
+go=function(p,c){
+  if(p=='sr'&&page!='sr')SRQ='';
+  _go3(p,c);
+  if(p=='sr')setTimeout(()=>{const e=$('#sq');if(e)e.focus()},120);
+};
+
+/* ---------- wifi speed test + install app ---------- */
+TITLE.spd='\u09b8\u09cd\u09aa\u09bf\u09a1 \u099f\u09c7\u09b8\u09cd\u099f';
+const SPH='https://speed.cloudflare.com',SPT={dl:8000,ul:6000},SP={run:false,ping:null,jit:null,dl:null,ul:null,msg:'',err:''};
+const spHist=()=>{try{return JSON.parse(localStorage.getItem('tihan_sp')||'[]')}catch(e){return[]}};
+const spF=v=>v==null?'\u2014':(v>=100?v.toFixed(0):v.toFixed(1));
+function spHtml(){
+  const h=spHist().slice().reverse();
+  return '<div class="hero" style="text-align:center"><div>'+(SP.run?'\u23f3 '+esc(SP.msg):'\ud83d\udcf6 \u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b8\u09cd\u09aa\u09bf\u09a1')+'</div><b>'+spF(SP.dl)+'</b><div>Mbps \u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1</div></div>'
+    +'<div class="tot"><div><b>'+spF(SP.ul)+'</b>\u0986\u09aa\u09b2\u09cb\u09a1 Mbps</div><div><b>'+(SP.ping==null?'\u2014':Math.round(SP.ping))+'</b>\u09aa\u09bf\u0982 ms</div><div><b>'+(SP.jit==null?'\u2014':Math.round(SP.jit))+'</b>\u099c\u09bf\u099f\u09be\u09b0 ms</div></div>'
+    +(SP.err?'<div class="c due">'+esc(SP.err)+'</div>':'')
+    +'<button class="big" onclick="spRun()" '+(SP.run?'disabled':'')+'>'+(SP.run?'\u099f\u09c7\u09b8\u09cd\u099f \u099a\u09b2\u099b\u09c7...':'\u25b6\ufe0f \u099f\u09c7\u09b8\u09cd\u099f \u09b6\u09c1\u09b0\u09c1 \u0995\u09b0\u09c1\u09a8')+'</button><br>'
+    +(h.length?'<div class="m" style="margin:10px 2px 6px">\u0986\u0997\u09c7\u09b0 \u099f\u09c7\u09b8\u09cd\u099f</div>'+h.map(x=>'<div class="c"><div class="row sp"><b>\u2b07\ufe0f '+spF(x.dl)+' \u00b7 \u2b06\ufe0f '+spF(x.ul)+' Mbps</b><span class="m">'+Math.round(x.ping||0)+' ms</span></div><div class="m">'+new Date(x.t).toLocaleString('bn-BD')+'</div></div>').join(''):'');
+}
+function spUI(){const e=$('#spb');if(e)e.innerHTML=spHtml()}
+P.spd=()=>'<div id="spb">'+spHtml()+'</div>';
+async function spRun(){
+  if(SP.run)return;
+  if(!navigator.onLine){toast('\u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09b2\u09be\u0997\u09ac\u09c7');return}
+  Object.assign(SP,{run:true,ping:null,jit:null,dl:null,ul:null,msg:'\u09aa\u09bf\u0982 \u09ae\u09be\u09aa\u09be \u09b9\u099a\u09cd\u099b\u09c7',err:''});spUI();
+  const now=()=>performance.now(),bad=[];
+  try{
+    const pts=[];
+    for(let i=0;i<6;i++){const t=now();await fetch(SPH+'/__down?bytes=0&r='+Math.random(),{cache:'no-store'});pts.push(now()-t)}
+    pts.shift();SP.ping=pts.reduce((a,x)=>a+x,0)/pts.length;
+    SP.jit=pts.slice(1).reduce((a,x,i)=>a+Math.abs(x-pts[i]),0)/Math.max(1,pts.length-1);
+  }catch(e){bad.push('\u09aa\u09bf\u0982')}
+  spUI();
+  try{
+    SP.msg='\u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1 \u09ae\u09be\u09aa\u09be \u09b9\u099a\u09cd\u099b\u09c7';spUI();
+    const t0=now();let got=0,last=0;
+    const res=await fetch(SPH+'/__down?bytes=200000000&r='+Math.random(),{cache:'no-store'});
+    const rd=res.body.getReader();
+    for(;;){
+      const{done,value}=await rd.read();if(done)break;
+      got+=value.length;const ms=now()-t0;
+      if(ms>400)SP.dl=got*8/(ms/1000)/1e6;
+      if(ms-last>300){last=ms;spUI()}
+      if(ms>=SPT.dl){try{await rd.cancel()}catch(e){}break}
+    }
+    if(SP.dl==null)SP.dl=got*8/Math.max(0.05,(now()-t0)/1000)/1e6;
+  }catch(e){bad.push('\u09a1\u09be\u0989\u09a8\u09b2\u09cb\u09a1')}
+  spUI();
+  try{
+    SP.msg='\u0986\u09aa\u09b2\u09cb\u09a1 \u09ae\u09be\u09aa\u09be \u09b9\u099a\u09cd\u099b\u09c7';spUI();
+    const blob=new Blob([new Uint8Array(1500000)]),u0=now();let sent=0;
+    while(now()-u0<SPT.ul&&sent<30e6){
+      await fetch(SPH+'/__up',{method:'POST',body:blob,cache:'no-store'});
+      sent+=blob.size;SP.ul=sent*8/((now()-u0)/1000)/1e6;spUI();
+    }
+  }catch(e){bad.push('\u0986\u09aa\u09b2\u09cb\u09a1')}
+  SP.run=false;
+  if(bad.length)SP.err=bad.join(', ')+' \u09ae\u09be\u09aa\u09be \u09af\u09be\u09af\u09bc\u09a8\u09bf\u0964 \u0987\u09a8\u09cd\u099f\u09be\u09b0\u09a8\u09c7\u099f \u09ac\u09be \u09ab\u09be\u09af\u09bc\u09be\u09b0\u0993\u09af\u09bc\u09be\u09b2 \u09a6\u09c7\u0996\u09c1\u09a8\u0964';
+  if(SP.dl!=null){const h=spHist();h.push({t:Date.now(),ping:SP.ping,dl:SP.dl,ul:SP.ul});try{localStorage.setItem('tihan_sp',JSON.stringify(h.slice(-8)))}catch(e){}}
+  spUI();
+}
+let DEFI=null;
+const isApp=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone}catch(e){return false}};
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();DEFI=e});
+addEventListener('appinstalled',()=>{DEFI=null;toast('\u0985\u09cd\u09af\u09be\u09aa \u0987\u09a8\u09b8\u09cd\u099f\u09b2 \u09b9\u09af\u09bc\u09c7\u099b\u09c7');render()});
+function installApp(){
+  if(DEFI){const d=DEFI;DEFI=null;d.prompt();return}
+  const m=$('#modal');
+  m.innerHTML='<div class="box"><h3 style="margin:0 0 8px">\ud83d\udcf2 \u0985\u09cd\u09af\u09be\u09aa \u0987\u09a8\u09b8\u09cd\u099f\u09b2</h3><p>\u09ac\u09cd\u09b0\u09be\u0989\u099c\u09be\u09b0\u09c7\u09b0 \u09ae\u09c7\u09a8\u09c1 (\u22ee \u0985\u09a5\u09ac\u09be \u09b6\u09c7\u09af\u09bc\u09be\u09b0 \u09ac\u09be\u099f\u09a8) \u0996\u09c1\u09b2\u09c1\u09a8\u0964 \u09a4\u09be\u09b0\u09aa\u09b0 <b>Add to Home screen</b> \u09ac\u09be <b>\u09b9\u09cb\u09ae \u09b8\u09cd\u0995\u09cd\u09b0\u09bf\u09a8\u09c7 \u09af\u09cb\u0997 \u0995\u09b0\u09c1\u09a8</b> \u099a\u09be\u09aa\u09c1\u09a8\u0964</p><button class="big" onclick="cm()">\u09a0\u09bf\u0995 \u0986\u099b\u09c7</button></div>';
+  m.style.display='flex';
+}
+const _gridH4=gridH;
+gridH=function(){
+  return _gridH4().replace(/<\/div>$/,'<div class="gi" onclick="go(\'spd\')"><span class="gc c0">\ud83d\udcf6</span>\u09b8\u09cd\u09aa\u09bf\u09a1 \u099f\u09c7\u09b8\u09cd\u099f</div>'+(isApp()?'':'<div class="gi" onclick="installApp()"><span class="gc c3">\ud83d\udcf2</span>\u0985\u09cd\u09af\u09be\u09aa \u09a8\u09bf\u09a8</div>')+'</div>');
+};
+const _render4=render;
+render=function(){
+  _render4();
+  if(!me&&!isApp()){const a=$('#app');if(a&&a.innerHTML.indexOf('insApp')<0)a.innerHTML=a.innerHTML.replace('<div class="logo">','<div id="insApp" style="text-align:center;margin-bottom:6px"><button class="s g" onclick="installApp()">\ud83d\udcf2 \u0985\u09cd\u09af\u09be\u09aa \u0987\u09a8\u09b8\u09cd\u099f\u09b2 \u0995\u09b0\u09c1\u09a8</button></div><div class="logo">')}
+};
+
+</script>
+</body></html>
