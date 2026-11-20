@@ -1,4 +1,4 @@
-const V='tk-v4';
+const V='tk-v5';
 self.addEventListener('install',e=>{
   self.skipWaiting();
   e.waitUntil(caches.open(V).then(c=>c.addAll(['./','manifest.json','icon-192.png','icon-512.png','icon-512-maskable.png'])).catch(()=>{}));
