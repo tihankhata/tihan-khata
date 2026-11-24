@@ -1,5 +1,0 @@
-const V='tk-v6',CORE=['./','index.html','manifest.json','icon-192.png'],CDN=['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js','https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js','https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js'];
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all([...CORE.map(u=>c.add(u).catch(()=>{})),...CDN.map(u=>fetch(u,{mode:'no-cors'}).then(r=>c.put(u,r)).catch(()=>{}))])).then(()=>self.skipWaiting()))});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!=V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
-self.addEventListener('fetch',e=>{const r=e.request;if(r.method!='GET'||/supabase\.co/.test(r.url))return;
- e.respondWith(caches.match(r,{ignoreSearch:true}).then(hit=>{const net=fetch(r).then(x=>{if(x&&(x.ok||x.type=='opaque')){const y=x.clone();caches.open(V).then(c=>c.put(r,y)).catch(()=>{})}return x}).catch(()=>hit||(r.mode=='navigate'?caches.match('index.html'):Response.error()));return hit||net}))});
