@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://tihankhata.github.io/tihan-khata/sitemap.xml
